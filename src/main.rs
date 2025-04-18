@@ -1,13 +1,13 @@
-mod model;
+mod models;
 
-use model::city::City;
-use model::coordinates::Coordinates;
+use models::city::City;
+use models::coordinates::Coordinates;
 use std::fs::File;
 use csv::Reader;
 use plotters::prelude::*;
 use std::error::Error;
  
-fn plot_current_state_plotters(cities: &Vec<City>, path: &str) -> Result<(), Box<dyn Error>> {
+fn plot_current_state(cities: &Vec<City>, path: &str) -> Result<(), Box<dyn Error>> {
     let (min_x, max_x): (f32, f32) = (-75.0, -35.0);
     let (min_y, max_y): (f32, f32) = (-33.0, 5.0);
     let image_size = (1024, 768);
@@ -84,5 +84,5 @@ fn read_csv_file(path: &str) -> Vec<City> {
 
 fn main() {
     let cities = read_csv_file("src/assets/cities.csv");
-    plot_current_state_plotters(&cities, "src/assets/graph.png").unwrap();
+    plot_current_state(&cities, "src/assets/graph.png").unwrap();
 }
