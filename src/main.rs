@@ -1,11 +1,12 @@
 mod models;
+mod algorithm;
 
-use models::city::City;
-use models::coordinates::Coordinates;
-use std::fs::File;
+use models::{coordinates::Coordinates, city::City};
+use std::{fs::File, error::Error, env};
+use algorithm::algorithm_strategy::AlgorithmStrategy;
 use csv::Reader;
+// update to just the used ones
 use plotters::prelude::*;
-use std::error::Error;
  
 fn plot_current_state(cities: &Vec<City>, path: &str) -> Result<(), Box<dyn Error>> {
     let (min_x, max_x): (f32, f32) = (-75.0, -35.0);
@@ -83,6 +84,10 @@ fn read_csv_file(path: &str) -> Vec<City> {
 }
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+
     let cities = read_csv_file("src/assets/cities.csv");
     plot_current_state(&cities, "src/assets/graph.png").unwrap();
+    
+    let cities_result = AlgorithmStrategy::execute_algorithm(args[1].as_str(), cities);
 }
