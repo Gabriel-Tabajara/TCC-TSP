@@ -16,8 +16,11 @@ struct Args {
     #[arg(short='a', long, default_value="G")]
     algorithm: String,
 
-    #[arg(short, long, default_value="BRAZIL")]
-    uf: String
+    #[arg(short='u', long, default_value="BRAZIL")]
+    uf: String,
+
+    #[arg(short='p', long)]
+    plot: bool
 }
  
 fn plot_current_state(cities: &Vec<City>, path: &str, uf: &UF) -> Result<(), Box<dyn Error>> {
@@ -106,14 +109,17 @@ fn main() {
     let args = Args::parse();
     let algorithm = args.algorithm.as_str();
     let uf = UF::get_uf_from_str(args.uf.as_str()).unwrap();
+    let plot = args.plot;
 
     let mut cities = read_csv_file("src/assets/cities.csv");
 
     if *uf.get_uf_enum() != UFEnum::BRAZIL {
         cities = retrieve_cities_for_uf(&uf.get_uf_enum(), &cities);
     }
-
-    plot_current_state(&cities, "src/assets/graph.png", &uf).unwrap();
+    
+    if plot {
+        plot_current_state(&cities, "src/assets/graph.png", &uf).unwrap();
+    }
     
     let cities_result = AlgorithmStrategy::execute_algorithm(algorithm, cities);
 }
