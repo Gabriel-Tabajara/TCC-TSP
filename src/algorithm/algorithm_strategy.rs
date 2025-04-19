@@ -9,11 +9,11 @@ pub struct AlgorithmStrategy;
 
 impl AlgorithmStrategy {
     pub fn execute_algorithm(algorithm: &str, cities: Vec<City>) -> Vec<City> {
-        match algorithm {
-            "AntColonyOptimization" => AntColonyOptimization::execute(cities),
-            "BranchAndBound" => BranchAndBound::execute(cities),
-            "Genetic" => Genetic::execute(cities),
-            "SimulatedAnnealing" => SimulatedAnnealing::execute(cities),
+        match algorithm.to_uppercase().as_str() {
+            "ACO" => AntColonyOptimization::execute(cities),
+            "BB" => BranchAndBound::execute(cities),
+            "G" => Genetic::execute(cities),
+            "SA" => SimulatedAnnealing::execute(cities),
             _ => panic!("Unknown algorithm")
         }
     }

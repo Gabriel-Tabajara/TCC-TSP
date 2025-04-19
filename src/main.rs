@@ -1,16 +1,28 @@
 mod models;
 mod algorithm;
 
-use models::{coordinates::Coordinates, city::City};
-use std::{fs::File, error::Error, env};
+use models::{city::City, coordinates::Coordinates, uf::{UFEnum, UF}};
+use clap::Parser;
+use core::f32;
+use std::{fs::File, error::Error};
 use algorithm::algorithm_strategy::AlgorithmStrategy;
 use csv::Reader;
 // update to just the used ones
 use plotters::prelude::*;
+
+#[derive(Parser)]
+#[command(name = "Optimizer")]
+struct Args {
+    #[arg(short='a', long, default_value="G")]
+    algorithm: String,
+
+    #[arg(short, long, default_value="BRAZIL")]
+    uf: String
+}
  
-fn plot_current_state(cities: &Vec<City>, path: &str) -> Result<(), Box<dyn Error>> {
-    let (min_x, max_x): (f32, f32) = (-75.0, -35.0);
-    let (min_y, max_y): (f32, f32) = (-33.0, 5.0);
+fn plot_current_state(cities: &Vec<City>, path: &str, uf: &UF) -> Result<(), Box<dyn Error>> {
+    let (min_x, max_x): (f32, f32) = uf.get_min_max_longitude().clone();
+    let (min_y, max_y): (f32, f32) = uf.get_min_max_latitude().clone();
     let image_size = (1024, 768);
     let font_style = "sans-serif";
     let caption_font_size = 30;
@@ -32,7 +44,7 @@ fn plot_current_state(cities: &Vec<City>, path: &str) -> Result<(), Box<dyn Erro
         .margin(10)
         .x_label_area_size(70)
         .y_label_area_size(70)
-        .build_cartesian_2d(min_x..max_x, min_y..max_y)?;
+        .build_cartesian_2d(min_x-1.0..max_x+1.0, min_y-1.0..max_y+1.0)?;
 
     chart.configure_mesh()
         .x_desc("Longitude")
@@ -66,6 +78,9 @@ fn read_csv_file(path: &str) -> Vec<City> {
                 cities.push(
                     City::new(
                         id, 
+                        UF::get_uf_from_code(
+                            city[5].parse::<u8>().unwrap()
+                        ).unwrap(),
                         Coordinates::new(
                             city[2].parse::<f32>().unwrap(),
                             city[3].parse::<f32>().unwrap()
@@ -83,11 +98,22 @@ fn read_csv_file(path: &str) -> Vec<City> {
     cities
 }
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
+fn retrieve_cities_for_uf(uf: &UFEnum, cities: &Vec<City>) -> Vec<City> {
+    cities.iter().filter(|city| city.get_uf().get_uf_enum() == uf).cloned().collect()
+}
 
-    let cities = read_csv_file("src/assets/cities.csv");
-    plot_current_state(&cities, "src/assets/graph.png").unwrap();
+fn main() {
+    let args = Args::parse();
+    let algorithm = args.algorithm.as_str();
+    let uf = UF::get_uf_from_str(args.uf.as_str()).unwrap();
+
+    let mut cities = read_csv_file("src/assets/cities.csv");
+
+    if *uf.get_uf_enum() != UFEnum::BRAZIL {
+        cities = retrieve_cities_for_uf(&uf.get_uf_enum(), &cities);
+    }
+
+    plot_current_state(&cities, "src/assets/graph.png", &uf).unwrap();
     
-    let cities_result = AlgorithmStrategy::execute_algorithm(args[1].as_str(), cities);
+    let cities_result = AlgorithmStrategy::execute_algorithm(algorithm, cities);
 }

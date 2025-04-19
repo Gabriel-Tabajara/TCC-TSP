@@ -10,7 +10,12 @@
 
 ## How to Run
 
-`cargo run -q`
+`cargo run -q -- --algorithm BB --uf RS`
+
+- default algorithm is `G` (Genetic Algorithm)
+  - options are `G` (Genetic Algorithm), `BB` (Branch and Bound), `SA` (Simulated Annealing) and `ADO` (Ant Colony Optimization)
+- default uf is `BRAZIL`
+
 
 - In order to plot the graphs you need to install `sudo apt install pkg-config libfontconfig1-dev`
 
