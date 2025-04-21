@@ -133,4 +133,6 @@ fn main() {
         initial_path.push(initial_path[0]);
         plot_current_state(&cities, &initial_path, "src/assets/graph.png", &uf).unwrap();
     }
+
+    println!("{}", cities_result.get_distance())
 }

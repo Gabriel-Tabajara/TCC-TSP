@@ -27,6 +27,17 @@ impl ExecuteResponse {
 pub trait Algorithm {
     fn execute(cities: &Vec<City>) -> ExecuteResponse;
 
+    fn calculate_path_distance(path: &[u16], distance_matrix: &[f64]) -> f64 {
+        let mut distance: f64 = 0.0;
+        let n = path.len();
+        for i in 0..n-1 {
+            distance += Self::get_in_matrix(distance_matrix, n, path[i] as usize, path[i+1] as usize);
+        }
+        distance += Self::get_in_matrix(distance_matrix, n, path[n-1] as usize, path[0] as usize);
+        //Result is in degress
+        distance
+    }
+
     fn calculate_distance_between_cities(city1: &City, city2: &City) -> f64 {
         let c1_coord = city1.get_coordinates();
         let c2_coord = city2.get_coordinates();
@@ -56,7 +67,7 @@ pub trait Algorithm {
     }
 
     fn get_in_matrix(matrix: &[f64], size: usize, row: usize, column: usize) -> f64 {
-        matrix[Self::matrix_index(row, size, column)]
+        matrix[Self::matrix_index(size, row, column)]
     }
 
     fn matrix_index(size: usize, row: usize, column: usize) -> usize{
