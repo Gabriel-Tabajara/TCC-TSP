@@ -4,7 +4,7 @@ mod algorithm;
 use models::{city::City, coordinates::Coordinates, uf::{UFEnum, UF}};
 use clap::Parser;
 use core::f32;
-use std::{fs::File, error::Error};
+use std::{fs::File, error::Error, iter::once};
 use algorithm::algorithm_strategy::AlgorithmStrategy;
 use csv::Reader;
 // update to just the used ones
@@ -23,7 +23,7 @@ struct Args {
     plot: bool
 }
  
-fn plot_current_state(cities: &Vec<City>, path: &str, uf: &UF) -> Result<(), Box<dyn Error>> {
+fn plot_current_state(cities: &Vec<City>, cities_path: &[u16], file_path: &str, uf: &UF) -> Result<(), Box<dyn Error>> {
     let (min_x, max_x): (f32, f32) = uf.get_min_max_longitude().clone();
     let (min_y, max_y): (f32, f32) = uf.get_min_max_latitude().clone();
     let image_size = (1024, 768);
@@ -31,7 +31,7 @@ fn plot_current_state(cities: &Vec<City>, path: &str, uf: &UF) -> Result<(), Box
     let caption_font_size = 30;
     let y_x_font_size = 20;
 
-    let image = BitMapBackend::new(path, image_size).into_drawing_area();
+    let image = BitMapBackend::new(file_path, image_size).into_drawing_area();
     image.fill(&WHITE)?;
 
     let latitudes_array: Vec<f32> = cities.iter()
@@ -41,6 +41,13 @@ fn plot_current_state(cities: &Vec<City>, path: &str, uf: &UF) -> Result<(), Box
     let longitudes_array: Vec<f32> = cities.iter()
         .map(|city| city.get_coordinates().get_longitude())
         .collect();
+
+    let path_lines: Vec<(f32, f32)> = cities_path.iter()
+                                                 .map(|&id| {
+                                                    let coordinates = cities[id as usize].get_coordinates();
+                                                    (coordinates.get_longitude(), coordinates.get_latitude())
+                                                 })
+                                                 .collect();
 
     let mut chart = ChartBuilder::on(&image)
         .caption("Current State Graph", (font_style, caption_font_size))
@@ -61,6 +68,8 @@ fn plot_current_state(cities: &Vec<City>, path: &str, uf: &UF) -> Result<(), Box
             Circle::new((x, y), 2, RED.filled())
         }),
     )?;
+
+    chart.draw_series(once(PathElement::new(path_lines, &BLUE)))?;
 
     image.present()?;
     Ok(())
@@ -117,9 +126,11 @@ fn main() {
         cities = retrieve_cities_for_uf(&uf.get_uf_enum(), &cities);
     }
     
-    if plot {
-        plot_current_state(&cities, "src/assets/graph.png", &uf).unwrap();
-    }
+    let cities_result = AlgorithmStrategy::execute_algorithm(algorithm, &cities);    
     
-    let cities_result = AlgorithmStrategy::execute_algorithm(algorithm, cities);
+    if plot {
+        let mut initial_path = cities_result.get_initial_path().clone();
+        initial_path.push(initial_path[0]);
+        plot_current_state(&cities, &initial_path, "src/assets/graph.png", &uf).unwrap();
+    }
 }
