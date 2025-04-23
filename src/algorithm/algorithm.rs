@@ -1,14 +1,16 @@
 use crate::models::city::City;
+use std::time::Duration;
 
 pub struct ExecuteResponse {
     initial_path: Vec<u16>,
     final_path: Vec<u16>,
-    distance: f64
+    distance: f64,
+    total_time: Duration
 }
 
 impl ExecuteResponse {
-    pub fn new(initial_path: Vec<u16>, final_path: Vec<u16>, distance: f64) -> Self {
-        ExecuteResponse { initial_path, final_path, distance }
+    pub fn new(initial_path: Vec<u16>, final_path: Vec<u16>, distance: f64, total_time: Duration) -> Self {
+        ExecuteResponse { initial_path, final_path, distance, total_time }
     }
 
     pub fn get_initial_path (&self) -> &Vec<u16> {
@@ -21,6 +23,10 @@ impl ExecuteResponse {
 
     pub fn get_distance (&self) -> &f64 {
         &self.distance
+    }
+
+    pub fn get_total_time (&self) -> &Duration {
+        &self.total_time
     }
 }
 

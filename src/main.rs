@@ -134,5 +134,6 @@ fn main() {
         plot_current_state(&cities, &initial_path, "src/assets/graph.png", &uf).unwrap();
     }
 
-    println!("{}", cities_result.get_distance())
+    println!("{}", cities_result.get_distance());
+    println!("{:#?}", cities_result.get_total_time().as_secs_f64());
 }
