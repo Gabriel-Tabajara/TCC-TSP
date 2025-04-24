@@ -83,7 +83,7 @@ fn read_csv_file(path: &str) -> Vec<City> {
 
     let mut cities: Vec<City> = Vec::with_capacity(records.len());
 
-    let mut id: u16 = 0;
+    let mut id: u16 = 1;
     for record in records.iter() {
         match record {
             Ok(city) => {
@@ -129,9 +129,9 @@ fn main() {
     let cities_result = AlgorithmStrategy::execute_algorithm(algorithm, &cities);    
     
     if plot {
-        let mut initial_path = cities_result.get_initial_path().clone();
-        initial_path.push(initial_path[0]);
-        plot_current_state(&cities, &initial_path, "src/assets/graph.png", &uf).unwrap();
+        let mut final_path = cities_result.get_final_path().clone();
+        final_path.push(final_path[0]);
+        plot_current_state(&cities, &final_path, "src/assets/graph.png", &uf).unwrap();
     }
 
     println!("{}", cities_result.get_distance());
