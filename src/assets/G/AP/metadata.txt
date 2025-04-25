@@ -1,0 +1,7 @@
+Path: [15, 7, 12, 6, 4, 2, 14, 11, 0, 1, 8, 3, 10, 13, 9, 5, 15]
+Distance: 11.807914126924855
+Total Time: 4.345501353
+Population Size: 15
+Generations: 100000
+Crossover: order_crossover
+Mutations: swap_mutation

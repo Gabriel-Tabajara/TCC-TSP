@@ -42,7 +42,7 @@ impl ExecuteResponse {
 }
 
 pub trait Algorithm {
-    fn execute(cities: &Vec<City>) -> ExecuteResponse;
+    fn execute(&mut self) -> ExecuteResponse;
 
     fn calculate_path_distance(path: &[u16], distance_matrix: &[f64]) -> f64 {
         let mut distance: f64 = 0.0;

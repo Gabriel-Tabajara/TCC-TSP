@@ -10,10 +10,10 @@ pub struct AlgorithmStrategy;
 impl AlgorithmStrategy {
     pub fn execute_algorithm(algorithm: &str, cities: &Vec<City>) -> ExecuteResponse {
         match algorithm.to_uppercase().as_str() {
-            "ACO" => AntColonyOptimization::execute(cities),
-            "BB" => BranchAndBound::execute(cities),
-            "G" => Genetic::execute(cities),
-            "SA" => SimulatedAnnealing::execute(cities),
+            "ACO" => AntColonyOptimization::new(cities).execute(),
+            "BB" => BranchAndBound::new(cities).execute(),
+            "G" => Genetic::new(cities).execute(),
+            "SA" => SimulatedAnnealing::new(cities).execute(),
             _ => panic!("Unknown algorithm")
         }
     }
