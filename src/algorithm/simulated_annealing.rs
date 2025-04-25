@@ -9,6 +9,6 @@ impl Algorithm for SimulatedAnnealing {
     fn execute(cities: &Vec<City>) -> ExecuteResponse {
         // TBD
         println!("Execute SimulatedAnnealing");
-        ExecuteResponse::new(vec![], vec![], 0.0, Instant::now().elapsed())
+        ExecuteResponse::new(vec![], vec![], 0.0, Instant::now().elapsed(), String::new())
     }
 }

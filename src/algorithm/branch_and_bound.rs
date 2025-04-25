@@ -9,6 +9,6 @@ impl Algorithm for BranchAndBound {
     fn execute(cities: &Vec<City>) -> ExecuteResponse {
         // TBD
         println!("Execute BranchAndBound");
-        ExecuteResponse::new(vec![], vec![], 0.0, Instant::now().elapsed())
+        ExecuteResponse::new(vec![], vec![], 0.0, Instant::now().elapsed(), String::new())
     }
 }

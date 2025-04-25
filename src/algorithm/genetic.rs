@@ -7,25 +7,16 @@ use crate::models::city::City;
 #[derive(Debug, Clone)]
 struct Chromossome {
     path: Vec<u16>,
-    initial_path: Vec<u16>,
     distance: f64
 }
 
 impl Chromossome {
     fn new(path: Vec<u16>, distance: f64) -> Self {
-        Chromossome { initial_path: path.clone(), path, distance }
+        Chromossome { path, distance }
     }
 
     fn get_path(&self) -> &Vec<u16>{
         &self.path
-    }
-
-    fn get_mut_path(&mut self) -> &mut Vec<u16>{
-        &mut self.path
-    }
-
-    fn get_initial_path(&self) -> &Vec<u16> {
-        &self.initial_path
     }
 
     fn get_distance(&self) -> &f64 {
@@ -214,18 +205,23 @@ impl Genetic {
     }
 }
 
+// TODO: Critério de parada
+// TODO: Mais mutações (greedy)
+// TODO: Testar outros crossovers
 impl Algorithm for Genetic {
     fn execute(cities: &Vec<City>) -> ExecuteResponse {
         println!("Execute Genetic");
         let start_time = Instant::now();
-        let population_size: usize = 5;
+        let population_size: usize = 15;
         let distance_matrix = Self::create_distance_matrix(&cities);
         
         let population = Self::create_random_population(population_size, cities.len(), &distance_matrix);
         let mut sorted_population = Self::sort_population_by_distance(&population);
 
+        let first_gen_best_path = sorted_population[0].get_path().clone();
+
         let swap = 1;
-        let gen_max_init = 500000;
+        let gen_max_init = 100000;
     
         if population_size == 1 {
             sorted_population[0] = Self::execute_for_one_population_army(&sorted_population[0], &distance_matrix, cities.len(), gen_max_init, swap);
@@ -233,6 +229,19 @@ impl Algorithm for Genetic {
             sorted_population = Self::execute_for_population(sorted_population, &distance_matrix, cities.len(), gen_max_init, population_size, swap);
         }
 
-        ExecuteResponse::new(sorted_population[0].get_initial_path().clone(), sorted_population[0].get_path().clone(), sorted_population[0].get_distance().clone(), start_time.elapsed())
+        let metadata = format!("Population Size: {}\nGenerations: {}\nCrossover: {}\nMutations: {}", 
+            population_size,
+            gen_max_init,
+            "order_crossover",
+            "swap_mutation"
+        );
+
+        ExecuteResponse::new(
+            first_gen_best_path, 
+            sorted_population[0].get_path().clone(), 
+            sorted_population[0].get_distance().clone(), 
+            start_time.elapsed(),
+            metadata
+        )
     }
 }

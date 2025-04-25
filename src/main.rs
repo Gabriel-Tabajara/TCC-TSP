@@ -1,10 +1,10 @@
 mod models;
 mod algorithm;
 
-use models::{city::City, coordinates::Coordinates, uf::{UFEnum, UF}};
+use models::{city::City, coordinates::Coordinates, uf::{UFEnum, UF}, graph_metadata::GraphMetadata};
 use clap::Parser;
 use core::f32;
-use std::{fs::File, error::Error, iter::once};
+use std::{fs::{File, create_dir_all}, error::Error, iter::once, path::Path};
 use algorithm::algorithm_strategy::AlgorithmStrategy;
 use csv::Reader;
 // update to just the used ones
@@ -23,13 +23,15 @@ struct Args {
     plot: bool
 }
  
-fn plot_current_state(cities: &Vec<City>, cities_path: &[u16], file_path: &str, uf: &UF) -> Result<(), Box<dyn Error>> {
+fn plot_state(cities: &Vec<City>, cities_path: &[u16], file_path: &str, uf: &UF) -> Result<(), Box<dyn Error>> {
     let (min_x, max_x): (f32, f32) = uf.get_min_max_longitude().clone();
     let (min_y, max_y): (f32, f32) = uf.get_min_max_latitude().clone();
     let image_size = (1024, 768);
     let font_style = "sans-serif";
     let caption_font_size = 30;
     let y_x_font_size = 20;
+
+    create_dir_all(Path::new(file_path).parent().unwrap())?;
 
     let image = BitMapBackend::new(file_path, image_size).into_drawing_area();
     image.fill(&WHITE)?;
@@ -75,7 +77,7 @@ fn plot_current_state(cities: &Vec<City>, cities_path: &[u16], file_path: &str, 
     Ok(())
 }
 
-fn read_csv_file(path: &str) -> Vec<City> {
+fn read_csv_cities(path: &str) -> Vec<City> {
     let file = File::open(path.to_string()).expect("Failed to open file");
     let mut reader = Reader::from_reader(file);
 
@@ -120,7 +122,7 @@ fn main() {
     let uf = UF::get_uf_from_str(args.uf.as_str()).unwrap();
     let plot = args.plot;
 
-    let mut cities = read_csv_file("src/assets/cities.csv");
+    let mut cities = read_csv_cities("src/assets/cities.csv");
 
     if *uf.get_uf_enum() != UFEnum::BRAZIL {
         cities = retrieve_cities_for_uf(&uf.get_uf_enum(), &cities);
@@ -129,9 +131,45 @@ fn main() {
     let cities_result = AlgorithmStrategy::execute_algorithm(algorithm, &cities);    
     
     if plot {
-        let mut final_path = cities_result.get_final_path().clone();
-        final_path.push(final_path[0]);
-        plot_current_state(&cities, &final_path, "src/assets/graph.png", &uf).unwrap();
+        let folder = format!("src/assets/{}/{}", algorithm, args.uf.as_str().to_uppercase());
+
+        let mut best_distance = cities_result.get_distance().clone();
+        let metadata_path = format!("{}/metadata.txt", folder);
+        if Path::new(&metadata_path).exists() {
+            best_distance = GraphMetadata::get_distance_from_file(metadata_path);
+        }
+
+        if best_distance == *cities_result.get_distance() {
+            let mut initial_path = cities_result.get_initial_path().clone();
+            initial_path.push(initial_path[0]);
+
+            let mut final_path = cities_result.get_final_path().clone();
+            final_path.push(final_path[0]);
+
+            plot_state(
+                &cities,
+                &final_path,
+                format!("{}/final.png", folder).as_str(),
+                &uf)
+            .unwrap();
+
+            plot_state(
+                &cities,
+                &initial_path,
+                format!("{}/inicial.png", folder).as_str(),
+                &uf)
+            .unwrap();
+
+            let metadata = GraphMetadata::new(
+                final_path, 
+                cities_result.get_distance().clone(), 
+                cities_result.get_total_time().clone(),
+                cities_result.get_metadata_info().clone()
+            );
+
+            metadata.generate_file(format!("{}/metadata.txt", folder));
+        }
+
     }
 
     println!("{}", cities_result.get_distance());

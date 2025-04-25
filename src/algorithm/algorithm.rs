@@ -5,12 +5,19 @@ pub struct ExecuteResponse {
     initial_path: Vec<u16>,
     final_path: Vec<u16>,
     distance: f64,
-    total_time: Duration
+    total_time: Duration,
+    metadata_info: String,
 }
 
 impl ExecuteResponse {
-    pub fn new(initial_path: Vec<u16>, final_path: Vec<u16>, distance: f64, total_time: Duration) -> Self {
-        ExecuteResponse { initial_path, final_path, distance, total_time }
+    pub fn new(initial_path: Vec<u16>, final_path: Vec<u16>, distance: f64, total_time: Duration, metadata_info: String) -> Self {
+        ExecuteResponse {
+            initial_path,
+            final_path,
+            distance,
+            total_time,
+            metadata_info,
+        }
     }
 
     pub fn get_initial_path (&self) -> &Vec<u16> {
@@ -27,6 +34,10 @@ impl ExecuteResponse {
 
     pub fn get_total_time (&self) -> &Duration {
         &self.total_time
+    }
+
+    pub fn get_metadata_info (&self) -> &String {
+        &self.metadata_info
     }
 }
 
