@@ -23,7 +23,26 @@ impl Chromossome {
         &self.distance
     }
 
-    fn swap_mutation(mut self, distance_matrix: &[f64], swaps: usize) -> Self {
+    fn update_distance(mut self, path: Vec<u16>, distance_matrix: &[f64]) -> Self {
+        let updated_distance = Genetic::calculate_path_distance(&path, distance_matrix);
+        if &updated_distance < &self.distance {
+            self.distance = updated_distance;
+            self.path = path;
+        }
+        self
+    }
+
+    fn mutate(self, distance_matrix: &[f64], swaps: usize, distance: usize) -> Self {
+        let mut rng = rng();
+        let swap_mut = rng.random_bool(0.8);
+        if swap_mut {
+            self.swap_mutation(distance_matrix, swaps)
+        } else {
+            self.displacement_mutation(distance_matrix, distance)
+        }
+    }
+
+    fn swap_mutation(self, distance_matrix: &[f64], swaps: usize) -> Self {
         let mut rng = rng();
         let n = &self.path.len();
         let mut path = self.path.clone();
@@ -33,12 +52,23 @@ impl Chromossome {
             
             path.swap(first, second);
         }
-        let updated_distance = Genetic::calculate_path_distance(&path, distance_matrix);
-        if &updated_distance < &self.distance {
-            self.distance = updated_distance;
-            self.path = path;
-        }
-        self
+        
+        self.update_distance(path, distance_matrix)
+    }
+
+    fn displacement_mutation(self, distance_matrix: &[f64], distance: usize) -> Self {
+        let mut rng = rng();
+        let n = &self.path.len();
+        let mut path = self.path.clone();
+        let shift_size = (n / 20).min(n - 1);
+
+        let shift_position = rng.random_range(0..n-shift_size-1);
+        let displaced_part: Vec<u16> = path.drain(shift_position..shift_position+shift_size).collect();
+        
+        let new_position = (shift_position + distance) % (n-shift_size);
+        path.splice(new_position..new_position, displaced_part);
+
+        self.update_distance(path, distance_matrix)
     }
 }
 
@@ -46,7 +76,8 @@ pub struct Genetic {
     distance_matrix: Vec<f64>,
     cities: Vec<City>,
     crossover: String,
-    mutations: Vec<String>
+    mutations: Vec<String>,
+    generations: u32
 }
 
 impl Genetic {
@@ -55,7 +86,8 @@ impl Genetic {
             distance_matrix: vec![], 
             cities: cities.clone(),
             crossover: String::new(),
-            mutations: vec![]
+            mutations: vec![],
+            generations: 0
         }
     }
 
@@ -114,29 +146,33 @@ impl Genetic {
         Chromossome::new(path, distance)
     }
     
-    fn execute_for_population(&mut self, mut sorted_population: Vec<Chromossome>, gen_max_init: i32, population_size: usize, initial_swap: usize) -> Vec<Chromossome> {
+    fn execute_for_population(&mut self, mut sorted_population: Vec<Chromossome>, population_size: usize, initial_swap: usize) -> Vec<Chromossome> {
         let mut previous_distance = sorted_population[0].get_distance().clone();
-        let mut gen_max_iter = gen_max_init;
         let mut gen_not_changed_best = 0;
         let mut gen_not_changed_best_limit = self.cities.len();
+        let gen_not_changed_best_breakpoint = 200000; 
+        let mut displaycement_dist = self.cities.len()/5;
         let mut swap = initial_swap;
 
-        while gen_max_iter > 0 {
-            // let (parent_1, parent_2) = (sorted_population[0].clone(), sorted_population[1].clone());
+        while gen_not_changed_best < gen_not_changed_best_breakpoint {
             let (parent_1, parent_2) = self.select_parents(&sorted_population);
             let children = self.order_crossover(&parent_1, &parent_2);
             sorted_population[population_size-1] = children.clone();
             for i in 2..population_size-2 {
-                sorted_population[i] = children.clone().swap_mutation(&self.distance_matrix, swap);
-                if swap > 1 {
-                    swap -= 1;
-                }
+                sorted_population[i] = children.clone().mutate(&self.distance_matrix, swap, displaycement_dist);
             }
             sorted_population = self.sort_population_by_distance(&sorted_population);
             let best_distance = sorted_population[0].get_distance();
             if previous_distance > *best_distance {
                 previous_distance = best_distance.clone();
-                println!("{} {}", &best_distance, gen_max_init - gen_max_iter);
+                println!("{} {} {} {}", &best_distance, self.generations, swap, displaycement_dist);
+                if swap > 1 {
+                    swap -= 1;
+                }
+                if displaycement_dist > 1 {
+                    displaycement_dist -= 1;
+                }
+                gen_not_changed_best = 0;
             } else {
                 gen_not_changed_best += 1;
             }
@@ -144,31 +180,41 @@ impl Genetic {
                 gen_not_changed_best_limit *= 2;
                 if swap < self.cities.len() {
                     swap += 1;
+                    displaycement_dist += 1;
                 } else {
-                    swap = 1
+                    swap = 1;
+                    displaycement_dist = 1;
                 }
             }
-            gen_max_iter -= 1;
+            self.generations += 1;
         }
 
         sorted_population
     }
 
-    fn execute_for_one_population_army(&self, first_gen: &Chromossome, gen_max_init: i32,initial_swap: usize) -> Chromossome {
+    fn execute_for_one_population_army(&mut self, first_gen: &Chromossome, initial_swap: usize) -> Chromossome {
         let mut previous_distance = first_gen.get_distance().clone();
-        let mut gen_max_iter = gen_max_init;
         let mut gen_not_changed_best = 0;
-        let mut gen_not_changed_best_limit = self.cities.len();
+        let mut gen_not_changed_best_limit = self.cities.len(); // Used to increase randomness
+        let gen_not_changed_best_breakpoint = 500000; // Used to stop the algorithm
         let mut swap = initial_swap;
+        let mut displaycement_dist = self.cities.len()/5;
         let mut current_gen = first_gen.clone();
 
-        while gen_max_iter > 0 {
-            let new_gen = current_gen.clone().swap_mutation(&self.distance_matrix, swap);
+        while gen_not_changed_best < gen_not_changed_best_breakpoint {
+            let new_gen = current_gen.clone().mutate(&self.distance_matrix, swap, displaycement_dist);
             let new_distance = new_gen.get_distance();
             if previous_distance > *new_distance {
                 previous_distance = new_distance.clone();
                 current_gen = new_gen.clone();
-                println!("{} {}", &new_distance, gen_max_init - gen_max_iter);
+                println!("{} {} {} {}", &new_distance, self.generations, swap, displaycement_dist);
+                if swap > 1 {
+                    swap -= 1;
+                }
+                if displaycement_dist > 1 {
+                    displaycement_dist -= 1;
+                }
+                gen_not_changed_best = 0;
             } else {
                 gen_not_changed_best += 1;
             }
@@ -176,24 +222,31 @@ impl Genetic {
                 gen_not_changed_best_limit *= 2;
                 if swap < self.cities.len() {
                     swap += 1;
+                    displaycement_dist += 1;
                 } else {
-                    swap = 1
+                    swap = 1;
+                    displaycement_dist = 1;
                 }
             }
-            gen_max_iter -= 1;
+            self.generations += 1;
         }
         current_gen
     }
 }
 
-// TODO: Critério de parada
 // TODO: Mais mutações (greedy)
 // TODO: Testar outros crossovers
 impl Algorithm for Genetic {
     fn execute(&mut self) -> ExecuteResponse {
         println!("Execute Genetic");
         let start_time = Instant::now();
-        let population_size: usize = 15;
+        let len_cities = self.cities.len();
+        let population_size;
+        if len_cities > 400 {
+            population_size = 1;
+        } else {
+            population_size = 5;
+        }
         self.distance_matrix = Self::create_distance_matrix(&self.cities);
         
         let population = self.create_random_population(population_size);
@@ -202,19 +255,18 @@ impl Algorithm for Genetic {
         let first_gen_best_path = sorted_population[0].get_path().clone();
 
         let swap = 1;
-        let gen_max_init = 100000;
     
         if population_size == 1 {
-            sorted_population[0] = self.execute_for_one_population_army(&sorted_population[0], gen_max_init, swap);
+            sorted_population[0] = self.execute_for_one_population_army(&sorted_population[0], swap);
         } else {
-            sorted_population = self.execute_for_population(sorted_population, gen_max_init, population_size, swap);
+            sorted_population = self.execute_for_population(sorted_population, population_size, swap);
         }
 
-        let metadata = format!("Population Size: {}\nGenerations: {}\nCrossover: {}\nMutations: {}", 
+        let metadata = format!("Population Size: {}\nGenerations: {}\nCrossover: {}\nMutations: {:?}", 
             population_size,
-            gen_max_init,
+            self.generations,
             self.crossover,
-            "swap_mutation"
+            ["swap_mutation", "displacement_mutation"]
         );
 
         ExecuteResponse::new(

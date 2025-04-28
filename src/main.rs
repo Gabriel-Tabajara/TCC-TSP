@@ -133,13 +133,13 @@ fn main() {
     if plot {
         let folder = format!("src/assets/{}/{}", algorithm, args.uf.as_str().to_uppercase());
 
-        let mut best_distance = cities_result.get_distance().clone();
+        let mut best_distance_in_file = cities_result.get_distance().clone();
         let metadata_path = format!("{}/metadata.txt", folder);
         if Path::new(&metadata_path).exists() {
-            best_distance = GraphMetadata::get_distance_from_file(metadata_path);
+            best_distance_in_file = GraphMetadata::get_distance_from_file(metadata_path);
         }
 
-        if best_distance == *cities_result.get_distance() {
+        if best_distance_in_file >= *cities_result.get_distance() {
             let mut initial_path = cities_result.get_initial_path().clone();
             initial_path.push(initial_path[0]);
 
