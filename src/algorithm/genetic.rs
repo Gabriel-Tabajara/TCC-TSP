@@ -7,12 +7,13 @@ use crate::models::city::City;
 #[derive(Debug, Clone)]
 struct Chromossome {
     path: Vec<u16>,
-    distance: f64
+    distance: f64,
+    mutation: String
 }
 
 impl Chromossome {
     fn new(path: Vec<u16>, distance: f64) -> Self {
-        Chromossome { path, distance }
+        Chromossome { path, distance, mutation: "".to_string() }
     }
 
     fn get_path(&self) -> &Vec<u16>{
@@ -21,6 +22,10 @@ impl Chromossome {
 
     fn get_distance(&self) -> &f64 {
         &self.distance
+    }
+
+    fn get_mutation(&self) -> &String {
+        &self.mutation
     }
 
     fn update_distance(mut self, path: Vec<u16>, distance_matrix: &[f64]) -> Self {
@@ -34,7 +39,7 @@ impl Chromossome {
 
     fn mutate(self, distance_matrix: &[f64], swaps: usize, distance: usize) -> Self {
         let mut rng = rng();
-        let swap_mut = rng.random_bool(0.8);
+        let swap_mut = rng.random_bool(0.3);
         if swap_mut {
             self.swap_mutation(distance_matrix, swaps)
         } else {
@@ -42,7 +47,8 @@ impl Chromossome {
         }
     }
 
-    fn swap_mutation(self, distance_matrix: &[f64], swaps: usize) -> Self {
+    fn swap_mutation(mut self, distance_matrix: &[f64], swaps: usize) -> Self {
+        self.mutation = "swap_mutation".to_string();
         let mut rng = rng();
         let n = &self.path.len();
         let mut path = self.path.clone();
@@ -56,16 +62,19 @@ impl Chromossome {
         self.update_distance(path, distance_matrix)
     }
 
-    fn displacement_mutation(self, distance_matrix: &[f64], distance: usize) -> Self {
+    // Melhorar parâmetros
+    fn displacement_mutation(mut self, distance_matrix: &[f64], distance: usize) -> Self {
+        self.mutation = "displacement_mutation".to_string();
         let mut rng = rng();
         let n = &self.path.len();
         let mut path = self.path.clone();
-        let shift_size = (n / 20).min(n - 1);
+        let shift_size = rng.random_range(2..n-1);
+        let distance2 = rng.random_range(0..n-1);
 
         let shift_position = rng.random_range(0..n-shift_size-1);
         let displaced_part: Vec<u16> = path.drain(shift_position..shift_position+shift_size).collect();
         
-        let new_position = (shift_position + distance) % (n-shift_size);
+        let new_position = (shift_position + distance2) % (n-shift_size);
         path.splice(new_position..new_position, displaced_part);
 
         self.update_distance(path, distance_matrix)
@@ -158,6 +167,7 @@ impl Genetic {
             let (parent_1, parent_2) = self.select_parents(&sorted_population);
             let children = self.order_crossover(&parent_1, &parent_2);
             sorted_population[population_size-1] = children.clone();
+            //tentar fazer do jeito normal
             for i in 2..population_size-2 {
                 sorted_population[i] = children.clone().mutate(&self.distance_matrix, swap, displaycement_dist);
             }
@@ -165,7 +175,7 @@ impl Genetic {
             let best_distance = sorted_population[0].get_distance();
             if previous_distance > *best_distance {
                 previous_distance = best_distance.clone();
-                println!("{} {} {} {}", &best_distance, self.generations, swap, displaycement_dist);
+                println!("{} {} {} {} {}", &best_distance, self.generations, swap, displaycement_dist, sorted_population[0].get_mutation());
                 if swap > 1 {
                     swap -= 1;
                 }
@@ -207,7 +217,7 @@ impl Genetic {
             if previous_distance > *new_distance {
                 previous_distance = new_distance.clone();
                 current_gen = new_gen.clone();
-                println!("{} {} {} {}", &new_distance, self.generations, swap, displaycement_dist);
+                println!("{} {} {} {} {}", &new_distance, self.generations, swap, displaycement_dist, new_gen.get_mutation());
                 if swap > 1 {
                     swap -= 1;
                 }
