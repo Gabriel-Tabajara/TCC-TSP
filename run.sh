@@ -1,8 +1,40 @@
 #!/bin/bash
 
 TIMES=5
+UFs=(
+    # "rr"
+    # "ap"
+    # "ac"
+    # "ro"
+    # "am"
+    # "se"
+    # "es"
+    # "ms"
+    "rj"
+    # "al"
+    # "to"
+    # "mt"
+    # "pa"
+    # "rn"
+    # "pe"
+    # "ce"
+    # "pb"
+    # "ma"
+    # "pi"
+    # "go"
+    # "sc"
+    # "pr"
+    # "ba"
+    # "rs"
+    # "sp"
+    # "mg"
+)
 
-for ((i=1; i<=TIMES; i++))
+for uf in "${UFs[@]}"
 do
-    cargo run -q -- -u to -p
+    for ((i=1; i<=TIMES; i++))
+    do
+        echo "Running test $i for UF: $uf"
+        cargo run -q -- -u "$uf" -p
+    done
 done

@@ -85,7 +85,7 @@ fn read_csv_cities(path: &str) -> Vec<City> {
 
     let mut cities: Vec<City> = Vec::with_capacity(records.len());
 
-    let mut id: u16 = 1;
+    let mut id: u16 = 0;
     for record in records.iter() {
         match record {
             Ok(city) => {
@@ -129,17 +129,18 @@ fn main() {
     }
     
     let cities_result = AlgorithmStrategy::execute_algorithm(algorithm, &cities);    
-    
+
     if plot {
         let folder = format!("src/assets/{}/{}", algorithm, args.uf.as_str().to_uppercase());
 
-        let mut best_distance_in_file = cities_result.get_distance().clone();
+        let mut best_distance_in_file = 0.0;
         let metadata_path = format!("{}/metadata.txt", folder);
-        if Path::new(&metadata_path).exists() {
+        let folder_exists = Path::new(&metadata_path).exists();
+        if folder_exists {
             best_distance_in_file = GraphMetadata::get_distance_from_file(metadata_path);
         }
 
-        if best_distance_in_file >= *cities_result.get_distance() {
+        if !folder_exists || (best_distance_in_file > *cities_result.get_distance()) {
             let mut initial_path = cities_result.get_initial_path().clone();
             initial_path.push(initial_path[0]);
 
