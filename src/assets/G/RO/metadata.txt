@@ -1,7 +1,7 @@
-Path: [27, 9, 5, 29, 20, 16, 43, 45, 44, 28, 3, 11, 31, 0, 41, 42, 38, 34, 18, 51, 14, 6, 35, 12, 15, 13, 33, 1, 40, 8, 25, 37, 23, 46, 48, 26, 30, 19, 7, 22, 32, 50, 47, 49, 24, 17, 21, 10, 36, 2, 39, 4, 27]
-Distance: 24.235499733029165
-Total Time: 17.408009587
-Population Size: 13
-Generations: 562740
-Crossover: cycle_crossover
+Path: [50, 47, 22, 19, 7, 4, 39, 49, 24, 17, 21, 10, 36, 2, 27, 9, 5, 29, 20, 16, 43, 45, 44, 28, 31, 40, 41, 0, 1, 33, 13, 51, 14, 6, 35, 12, 15, 42, 38, 34, 18, 8, 25, 23, 37, 11, 3, 48, 26, 30, 46, 32, 50]
+Distance: 24.16890305226235
+Total Time: 20.188883285
+Population Size: 10
+Generations: 549576
+Crossover: order_based_crossover
 Mutations: {"swap_mutation", "displacement_mutation"}
