@@ -1,6 +1,7 @@
-use std::{collections::HashSet, time::Instant};
+use std::{collections::{HashMap, HashSet}, time::Instant};
 
-use rand::{rng, seq::SliceRandom, Rng};
+use plotters::prelude::LogScalable;
+use rand::{distr::{weighted::WeightedIndex, Distribution}, rng, rngs::ThreadRng, seq::{index, SliceRandom}, Rng};
 use super::algorithm::{Algorithm, ExecuteResponse};
 use crate::models::city::City;
 
@@ -8,12 +9,21 @@ use crate::models::city::City;
 struct Chromossome {
     path: Vec<u16>,
     distance: f64,
-    mutation: String
+    mutation: String,
+    rng: ThreadRng
+}
+
+impl PartialEq for Chromossome {
+    fn eq(&self, other: &Self) -> bool {
+        self.path == other.path &&
+        self.distance == other.distance &&
+        self.mutation == other.mutation
+    }
 }
 
 impl Chromossome {
     fn new(path: Vec<u16>, distance: f64) -> Self {
-        Chromossome { path, distance, mutation: "".to_string() }
+        Chromossome { path, distance, mutation: "".to_string(), rng: rng() }
     }
 
     fn get_path(&self) -> &Vec<u16>{
@@ -37,9 +47,8 @@ impl Chromossome {
         self
     }
 
-    fn mutate(self, distance_matrix: &[f64], swaps: usize) -> Self {
-        let mut rng = rng();
-        let swap_mut = rng.random_bool(0.5);
+    fn mutate(mut self, distance_matrix: &[f64], swaps: usize) -> Self {
+        let swap_mut = self.rng.random_bool(0.5);
         if swap_mut {
             self.swap_mutation(distance_matrix, swaps)
         } else {
@@ -49,12 +58,12 @@ impl Chromossome {
 
     fn swap_mutation(mut self, distance_matrix: &[f64], swaps: usize) -> Self {
         self.mutation = "swap_mutation".to_string();
-        let mut rng = rng();
+        
         let n = &self.path.len();
         let mut path = self.path.clone();
         for i in 0..swaps {     
-            let first = rng.random_range(0..n-1);
-            let second = rng.random_range(0..n-1);
+            let first = self.rng.random_range(0..n-1);
+            let second = self.rng.random_range(0..n-1);
             
             path.swap(first, second);
         }
@@ -64,13 +73,13 @@ impl Chromossome {
 
     fn displacement_mutation(mut self, distance_matrix: &[f64]) -> Self {
         self.mutation = "displacement_mutation".to_string();
-        let mut rng = rng();
+        
         let n = &self.path.len();
         let mut path = self.path.clone();
-        let shift_size = rng.random_range(2..n-1);
-        let distance2 = rng.random_range(0..n-1);
+        let shift_size = self.rng.random_range(2..n-1);
+        let distance2 = self.rng.random_range(0..n-1);
 
-        let shift_position = rng.random_range(0..n-shift_size-1);
+        let shift_position = self.rng.random_range(0..n-shift_size-1);
         let displaced_part: Vec<u16> = path.drain(shift_position..shift_position+shift_size).collect();
         
         let new_position = (shift_position + distance2) % (n-shift_size);
@@ -85,7 +94,8 @@ pub struct Genetic {
     cities: Vec<City>,
     crossover: String,
     mutations: HashSet<String>,
-    generations: u32
+    generations: u32,
+    rng: ThreadRng
 }
 
 impl Genetic {
@@ -95,17 +105,17 @@ impl Genetic {
             cities: cities.clone(),
             crossover: String::new(),
             mutations: HashSet::new(),
-            generations: 0
+            generations: 0,
+            rng: rng()
         }
     }
 
-    fn create_random_population(&self, n: usize) -> Vec<Chromossome> {
+    fn create_random_population(&mut self, n: usize) -> Vec<Chromossome> {
         let mut population: Vec<Chromossome> = Vec::with_capacity(n);
         let mut current_path: Vec<u16> = (0..=self.cities.len()-1).map(|x| x as u16).collect();
-        let mut rng = rng(); 
         
         while population.len() < n {
-            current_path.shuffle(&mut rng);
+            current_path.shuffle(&mut self.rng);
             population.push(
                 Chromossome::new(
                     current_path.clone(), 
@@ -117,27 +127,36 @@ impl Genetic {
         population
     }
 
-    fn sort_population_by_distance(&self, population: &[Chromossome]) -> Vec<Chromossome> {
-        let mut sorted = population.to_vec();
-        sorted.sort_by(|a: &Chromossome, b| a.distance.partial_cmp(&b.distance).unwrap());
-        sorted
+    fn get_best_chromossome(&self, population: &[Chromossome]) -> Chromossome {
+        population.iter()
+                  .min_by(|a, b| 
+                    a.distance.partial_cmp(&b.distance).unwrap())
+                  .unwrap()
+                  .clone()
     }
 
-    fn select_parents(&self, population: &[Chromossome]) -> (Chromossome, Chromossome) {
-        let mut rng = rng(); 
+    fn get_worst_chromossome(&self, population: &[Chromossome]) -> Chromossome {
+        population.iter()
+                  .max_by(|a, b| 
+                    a.distance.partial_cmp(&b.distance).unwrap())
+                  .unwrap()
+                  .clone()
+    }
+
+    fn select_parents(&mut self, population: &[Chromossome]) -> (Chromossome, Chromossome) {
         let mut shuffle_result = population.to_vec();
-        shuffle_result.shuffle(&mut rng);
+        shuffle_result.shuffle(&mut self.rng);
         (shuffle_result[0].clone(), shuffle_result[1].clone())
     }
 
+    // Muito demorado e ruim
     fn order_crossover(&mut self, parent_1: &Chromossome, parent_2: &Chromossome) -> Chromossome {
         self.crossover = "order_crossover".to_string();
 
-        let mut rng = rng();
         let n = parent_1.get_path().len();
 
-        let mut start = rng.random_range(0..n-2);
-        let mut end = rng.random_range(start+1..n-1);
+        let mut start = self.rng.random_range(0..n-2);
+        let mut end = self.rng.random_range(start+1..n-1);
 
         let mut path = vec![u16::MAX; n];
         path[start..end].copy_from_slice(&parent_1.get_path()[start..end]);
@@ -157,14 +176,14 @@ impl Genetic {
         Chromossome::new(path, distance)
     }
 
+    // Rápido e bom
     fn order_based_crossover(&mut self, parent_1: &Chromossome, parent_2: &Chromossome) -> Chromossome { 
         self.crossover = "order_based_crossover".to_string();
 
-        let mut rng = rng();
         let n = parent_1.get_path().len();
 
-        let mut start = rng.random_range(0..n-2);
-        let end = rng.random_range(start+1..n-1);
+        let mut start = self.rng.random_range(0..n-2);
+        let end = self.rng.random_range(start+1..n-1);
         
         let mut path = parent_1.get_path().clone();
         path.drain(start..end);
@@ -179,6 +198,7 @@ impl Genetic {
         Chromossome::new(path, distance)
     }
     
+    // Rápido e bom
     fn cycle_crossover(&mut self, parent_1: &Chromossome, parent_2: &Chromossome) -> Chromossome { 
         self.crossover = "cycle_crossover".to_string();
         let parent_1_path = parent_1.get_path();
@@ -191,13 +211,10 @@ impl Genetic {
         let mut cycle = vec![];
         let mut availiable_pos: Vec<usize> = (0..n).collect();
 
-        // println!("\n{:?}", parent_1.get_path());
-        // println!("{:?}", parent_2.get_path());
-
         while !cycle.contains(&current) {
             cycle.push(current);
             let i = parent_1_path.iter().position(|&x| x == current).unwrap();
-            availiable_pos.retain(|&x| x != i); // Keep the other values
+            availiable_pos.retain(|&x| x != i); 
             path[i] = current;
             current = parent_2_path[i];
         }
@@ -209,53 +226,312 @@ impl Genetic {
                 av_i += 1;
             }
         }
-        // println!("{:?}", &path);
+
         let distance = Self::calculate_path_distance(&path, &self.distance_matrix);
         Chromossome::new(path, distance)
     }
-    fn position_based_crossover() {
+
+    // Demorado e bom
+    fn position_based_crossover(&mut self, parent_1: &Chromossome, parent_2: &Chromossome) -> Chromossome {
+        self.crossover = "position_based_crossover".to_string();
+        let parent_2_path = parent_2.get_path();
+
+        let n = parent_2_path.len();
+        let mut path = parent_1.get_path().clone();
+
+        let mut swap_size = self.rng.random_range(1..path.len()/2);
+        let mut swaped_positions: HashSet<usize> = HashSet::new();
         
+        while swap_size > 0 {
+            let i = self.rng.random_range(0..n-1);
+            let to_swap = path[i];
+            if !swaped_positions.contains(&i) {
+                let j = path.iter().position(|&x| x == parent_2_path[i]).unwrap();
+                path[i] = parent_2_path[i];
+                path[j] = to_swap;
+                swaped_positions.insert(i);
+                swap_size -= 1;
+            }
+        }
+    
+        let distance = Self::calculate_path_distance(&path, &self.distance_matrix);
+        Chromossome::new(path, distance)
     }
-    fn heuristic_crossover() {}
-    fn genetic_edge_recombination_crossover() {}
-    fn sorted_match_crossover() {}
-    fn maximal_preservative_crossover() {}
-    fn voting_recombination_crossover() {}
-    fn partially_mapped_crossover() {}
-    fn cycle_crossover_v2() {}
+
+    // Meio ruim e muito lento
+    fn heuristic_crossover(&mut self, parent_1: &Chromossome, parent_2: &Chromossome) -> Chromossome {
+        self.crossover = "heuristic_crossover".to_string();
+        let parent_1_path = parent_1.get_path();
+        let parent_2_path = parent_2.get_path();
+
+        let n = parent_1_path.len();
+        let mut path = vec![];
+        let mut unvisited = parent_1_path.clone();
+
+        path.push(unvisited[self.rng.random_range(0..unvisited.len()-1)]);
+        let mut current = path[0];
+        unvisited.retain(|&x| x != current); 
+
+        while path.len() < n {
+            let mut edges = vec![];
+            let j = parent_1_path.iter().position(|&x| x == current).unwrap();
+            let k = parent_2_path.iter().position(|&x| x == current).unwrap();
+            for (parent, i) in [(parent_1_path, j), (parent_2_path, k)] {
+                if i > 0 && !path.contains(&parent[i-1]) { 
+                    edges.push((parent[i-1], Self::calculate_distance_between_cities_ids(current as usize, parent[i-1] as usize, &self.cities)));
+                }
+
+                if i+1 < parent.len() && !path.contains(&parent[i+1]) {
+                    edges.push((parent[i+1], Self::calculate_distance_between_cities_ids(current as usize, parent[i+1] as usize, &self.cities)));
+                }
+            }
+
+            if edges.len() == 1 {
+                current = edges[0].0;
+            } else if edges.len() > 0 {
+                let mut probabilities = vec![];
+                for edge in &edges {
+                    probabilities.push((1.0/edge.1)/edges.len().as_f64());
+                }   
+                let dist = WeightedIndex::new(&probabilities).unwrap();
+                current = edges[dist.sample(&mut self.rng)].0;
+            } else {
+                let random_pos = self.rng.random_range(0..unvisited.len());
+                current = unvisited[random_pos];
+            }
+
+            unvisited.retain(|&x| x != current); 
+            path.push(current);
+        }
+
+        let distance = Self::calculate_path_distance(&path, &self.distance_matrix);
+        Chromossome::new(path, distance)
+    }
+
+    // Ruim e muito lento
+    fn genetic_edge_recombination_crossover(&mut self, parent_1: &Chromossome, parent_2: &Chromossome) -> Chromossome {
+        self.crossover = "genetic_edge_recombination_crossover".to_string();
+        let parent_1_path = parent_1.get_path();
+        let parent_2_path = parent_2.get_path();
+        let n = parent_1_path.len();
+
+        let mut path = vec![];
+        let mut unvisited = parent_1_path.clone();
+
+        path.push(unvisited[self.rng.random_range(0..unvisited.len()-1)]);
+        let mut current = path[0];
+        unvisited.retain(|&x| x != current); 
+
+        let mut edge_map: HashMap<u16, HashSet<u16>> = HashMap::new();
+        for parent in [parent_1_path, parent_2_path] {
+            for i in 0..parent.len() {
+                let city = parent[i];
+                let set = edge_map.entry(city)
+                .or_insert_with(HashSet::new);
+            
+            if i+1 == parent.len() {
+                set.insert(parent[0]);
+            } else {
+                set.insert(parent[i+1]);
+                }
+                
+                if i == 0 {
+                    set.insert(parent[parent.len()-1]);
+                } else {
+                    set.insert(parent[i-1]);
+                }
+            }
+        }
+        
+        while path.len() < n {
+            for edge_set in edge_map.values_mut() {
+                edge_set.remove(&current);
+            }
+
+            let current_set = edge_map.get(&current).unwrap();
+            if !current_set.is_empty() {
+                let less_cities = current_set.iter()
+                                             .min_by(
+                                                |c1, c2| edge_map.get(c1).unwrap().len().cmp(&edge_map.get(c2).unwrap().len())).unwrap_or(&unvisited[self.rng.random_range(0..unvisited.len())]);
+                current = less_cities.clone();
+            } else {
+                current = unvisited[self.rng.random_range(0..unvisited.len())];
+            }
+            unvisited.retain(|&x| x != current); 
+            path.push(current);
+        }
+
+        let distance = Self::calculate_path_distance(&path, &self.distance_matrix);
+        Chromossome::new(path, distance)
+    }
+    
+    // Ruim e rápido
+    fn maximal_preservative_crossover(&mut self, parent_1: &Chromossome, parent_2: &Chromossome) -> Chromossome {
+        self.crossover = "maximal_preservative_crossover".to_string();
+
+        let n = parent_1.get_path().len();
+
+        let start = self.rng.random_range(0..n-10);
+        let end;
+        if start+10 < n/2 {
+            end = self.rng.random_range(start+10..n/2);
+        } else {
+            end = n-1;
+        }
+
+        let mut path = parent_1.get_path()[start..end].to_vec();
+        
+        for &city in parent_2.get_path() {
+            if !path.contains(&city) {
+                path.push(city);
+            }
+        }
+        
+        let distance = Self::calculate_path_distance(&path, &self.distance_matrix);
+        Chromossome::new(path, distance)
+    }
+    
+    // Demora um pouco porém bom
+    fn partially_mapped_crossover(&mut self, parent_1: &Chromossome, parent_2: &Chromossome) -> Chromossome {
+        self.crossover = "partially_mapped_crossover".to_string();
+
+        let n = parent_1.get_path().len();
+
+        let start = self.rng.random_range(0..n-2);
+        let end = self.rng.random_range(start+1..n-1);
+        
+        let mut path = vec![u16::MAX; n];
+        let initial = &parent_1.get_path()[start..end].to_vec();
+        let replace = &parent_2.get_path()[start..end].to_vec();
+
+        path[start..end].copy_from_slice(initial);
+  
+        let mut i = 0;
+        for &city in parent_2.get_path() {
+            if !(start..end).contains(&i) {
+                if !path.contains(&city) && !replace.contains(&city) {
+                    path[i] = city;
+                    i+=1;
+                } else if initial.contains(&city) && !replace.contains(&city) {
+                    let mut replaced = false;
+                    let mut initial_pos = initial.iter().position(|&x| x == city).unwrap();
+                    while !replaced {
+                        if !path.contains(&replace[(initial_pos)%replace.len()]) {
+                            path[i] = replace[(initial_pos)%replace.len()];
+                            replaced = true;
+                        }
+                        initial_pos+=1;
+                    }
+                    i+=1;
+                }
+            } else {
+                i += end-start;
+            }
+        }
+        
+        let distance = Self::calculate_path_distance(&path, &self.distance_matrix);
+        Chromossome::new(path, distance)
+    }
+
+    // Rápido porém ruim
+    fn alternating_position_crossover(&mut self, parent_1: &Chromossome, parent_2: &Chromossome) -> Chromossome {
+        self.crossover = "alternating_position_crossover".to_string();
+
+        let n = parent_1.get_path().len();
+        let mut path = vec![];
+        let mut i = 0;
+        while path.len() < n {
+            if !path.contains(&parent_1.get_path()[i]) {
+                path.push(parent_1.get_path()[i]);
+            } 
+            
+            if !path.contains(&parent_2.get_path()[i]) {
+                path.push(parent_2.get_path()[i]);
+            } 
+            
+            i+=1;
+        }
+        
+        let distance = Self::calculate_path_distance(&path, &self.distance_matrix);
+        Chromossome::new(path, distance)
+    }
+
+    // Horrorrosso
+    fn cycle_crossover_v2(&mut self, parent_1: &Chromossome, parent_2: &Chromossome) -> Chromossome {
+        self.crossover = "cycle_crossover_v2".to_string();
+        let parent_1_path = parent_1.get_path();
+        let parent_2_path = parent_2.get_path();
+
+        let n = parent_1_path.len();
+        let mut path = vec![];
+        
+        let mut availiable = parent_2_path[0..n].to_vec();
+
+        let mut current;
+
+        while availiable.len() > 0 {
+            let mut turn = 2;
+            let mut cycle = vec![];
+            current = availiable[0];
+
+            loop {
+                if turn % 2 == 0 {
+                    if cycle.contains(&current) || !availiable.contains(&current) {
+                        break;
+                    }
+                    cycle.push(current);
+                    availiable.retain(|&x| x != current as u16); 
+                    path.push(current);
+                }
+                let i = parent_1_path.iter().position(|&x| x == current).unwrap();
+                current = parent_2_path[i];
+                turn+=1;
+            }
+        }
+
+        let distance = Self::calculate_path_distance(&path, &self.distance_matrix);
+        Chromossome::new(path, distance)
+    }
 
 
-    fn execute_for_population(&mut self, mut sorted_population: Vec<Chromossome>, population_size: usize, initial_swap: usize) -> Vec<Chromossome> {
-        let mut previous_distance = sorted_population[0].get_distance().clone();
+    fn execute_for_population(&mut self, mut population: Vec<Chromossome>, initial_swap: usize) -> Vec<Chromossome> {
+        let mut worst = self.get_worst_chromossome(&population);
+        let mut best = self.get_best_chromossome(&population);
         let mut gen_not_changed_best = 0;
         let mut gen_not_changed_best_limit = self.cities.len();
+        // setar por crossover
         let gen_not_changed_best_breakpoint = 200000; 
         let mut swap = initial_swap;
         // for i in 0..2 {
         while gen_not_changed_best < gen_not_changed_best_breakpoint {
-            let (parent_1, parent_2) = self.select_parents(&sorted_population);
-            let children = self.cycle_crossover(&parent_1, &parent_2);
-            // sorted_population[population_size-1] = children.clone();
-            sorted_population[population_size-1] = children.clone().mutate(&self.distance_matrix, swap);
-            // for i in 2..population_size-2 {
-            //     sorted_population[i] = children.clone().mutate(&self.distance_matrix, swap);
-            // }
-            // sorted_population[population_size-1] = sorted_population[population_size-1].clone().mutate(&self.distance_matrix, swap);
+            let (parent_1, parent_2) = self.select_parents(&population);
+            let children = self.order_based_crossover(&parent_1, &parent_2)
+                                            .mutate(&self.distance_matrix, swap);
             
-            sorted_population = self.sort_population_by_distance(&sorted_population);
-            let best_distance = sorted_population[0].get_distance();
-            if previous_distance > *best_distance {
-                previous_distance = best_distance.clone();
-                let mutation = sorted_population[0].get_mutation();
-                self.mutations.insert(mutation.clone());
-                println!("{} {} {} {}", &best_distance, self.generations, swap, mutation);
-                if swap > 1 {
-                    swap -= 1;
+            if children.get_distance() < worst.get_distance() {
+                let i = population.iter().position(|x| x == &worst).unwrap();
+
+                population.remove(i);
+                population.push(children.clone());
+
+                worst = self.get_worst_chromossome(&population);
+
+                if children.get_distance() < best.get_distance() {
+                    best = children;               
+                    let mutation = best.get_mutation();
+                    self.mutations.insert(mutation.clone());
+                    // println!("{} {} {} {}", &best.get_distance(), self.generations, swap, mutation);
+                    if swap > 1 {
+                        swap -= 1;
+                    }
+                    gen_not_changed_best = 0;
+                } else {
+                    gen_not_changed_best += 1;
                 }
-                gen_not_changed_best = 0;
             } else {
                 gen_not_changed_best += 1;
             }
+
             if gen_not_changed_best > gen_not_changed_best_limit {
                 gen_not_changed_best_limit *= 2;
                 if swap < self.cities.len() {
@@ -264,10 +540,11 @@ impl Genetic {
                     swap = 1;
                 }
             }
+
             self.generations += 1;
         }
-
-        sorted_population
+        
+        population
     }
 
     fn execute_for_one_population_army(&mut self, first_gen: &Chromossome, initial_swap: usize) -> Chromossome {
@@ -309,31 +586,29 @@ impl Genetic {
 }
 
 // TODO: Mais mutações (greedy)
-// TODO: Testar outros crossovers
 impl Algorithm for Genetic {
     fn execute(&mut self) -> ExecuteResponse {
         println!("Execute Genetic");
         let start_time = Instant::now();
         let len_cities = self.cities.len();
         let population_size;
-        if len_cities > 400 {
+        if len_cities > 1000 {
             population_size = 1;
         } else {
-            population_size = 100;
+            population_size = 5;
         }
         self.distance_matrix = Self::create_distance_matrix(&self.cities);
         
-        let population = self.create_random_population(population_size);
-        let mut sorted_population = self.sort_population_by_distance(&population);
+        let mut population = self.create_random_population(population_size);
 
-        let first_gen_best_path = sorted_population[0].get_path().clone();
+        let first_gen_best_path = population[0].get_path().clone();
 
         let swap = 1;
 
         if population_size == 1 {
-            sorted_population[0] = self.execute_for_one_population_army(&sorted_population[0], swap);
+            population[0] = self.execute_for_one_population_army(&population[0], swap);
         } else {
-            sorted_population = self.execute_for_population(sorted_population, population_size, swap);
+            population = self.execute_for_population(population, swap);
         }
 
         let metadata = format!("Population Size: {}\nGenerations: {}\nCrossover: {}\nMutations: {:?}", 
@@ -343,10 +618,12 @@ impl Algorithm for Genetic {
             self.mutations
         );
 
+        let best = self.get_best_chromossome(&population);
+
         ExecuteResponse::new(
             first_gen_best_path, 
-            sorted_population[0].get_path().clone(), 
-            sorted_population[0].get_distance().clone(), 
+            best.get_path().clone(), 
+            best.get_distance().clone(), 
             start_time.elapsed(),
             metadata
         )

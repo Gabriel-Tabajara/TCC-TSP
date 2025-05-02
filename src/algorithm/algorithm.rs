@@ -65,6 +65,10 @@ pub trait Algorithm {
         (x_part + y_part).sqrt()
     }
 
+    fn calculate_distance_between_cities_ids(id1: usize, id2: usize, cities: &Vec<City>) -> f64 {
+        Self::calculate_distance_between_cities(&cities[id1], &cities[id2])
+    }
+
     fn create_distance_matrix(cities: &Vec<City>) -> Vec<f64> {
         let n = cities.len();
 
