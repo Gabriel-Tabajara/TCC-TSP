@@ -27,3 +27,45 @@ Acre	            AC	22
 Amapá	            AP	16
 Roraima	            RR	15
 Distrito Federal*	DF	1
+
+Rondônia RO	52
+                            5   10  20  50  100
+order_based_crossover      
+cycle_crossover
+partially_mapped_crossover
+
+Mato Grosso do Sul	MS	79
+                            5   10  20  50  100
+order_based_crossover      
+cycle_crossover
+partially_mapped_crossover
+
+Mato Grosso do Sul	MS	79
+                            5   10  20  50  100
+order_based_crossover      
+cycle_crossover
+partially_mapped_crossover
+
+Rio de Janeiro RJ  92
+                            5   10  20  50  100
+order_based_crossover      
+cycle_crossover
+partially_mapped_crossover
+
+Tocantins TO	139
+                            5   10  20  50  100
+order_based_crossover      
+cycle_crossover
+partially_mapped_crossover
+
+Ceará CE	184
+                            5   10  20  50  100
+order_based_crossover      
+cycle_crossover
+partially_mapped_crossover
+
+Santa Catarina	 SC	295
+                            5   10  20  50  100
+order_based_crossover      
+cycle_crossover
+partially_mapped_crossover
