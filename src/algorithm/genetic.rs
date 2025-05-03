@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}, time::Instant};
+use std::{collections::{HashMap, HashSet}, time::Instant, usize};
 
 use plotters::prelude::LogScalable;
 use rand::{distr::{weighted::WeightedIndex, Distribution}, rng, rngs::ThreadRng, seq::{index, SliceRandom}, Rng};
@@ -38,27 +38,37 @@ impl Chromossome {
         &self.mutation
     }
 
-    fn update_distance(mut self, path: Vec<u16>, distance_matrix: &[f64]) -> Self {
+    // Tentar sempre atualizando a distancia
+    fn update_distance(mut self, path: Vec<u16>, distance_matrix: &[f64], mutation: &str) -> Self {
         let updated_distance = Genetic::calculate_path_distance(&path, distance_matrix);
         if &updated_distance < &self.distance {
             self.distance = updated_distance;
             self.path = path;
+            self.mutation = mutation.to_string();
         }
         self
     }
 
     fn mutate(mut self, distance_matrix: &[f64], swaps: usize) -> Self {
-        let swap_mut = self.rng.random_bool(0.5);
-        if swap_mut {
+        let prob = self.rng.random_range(0.0..1.0);
+        if prob <= 0.19 {
             self.swap_mutation(distance_matrix, swaps)
-        } else {
+        } else if prob <= 0.39 {
             self.displacement_mutation(distance_matrix)
+        } else if prob <= 0.59 {
+            self.insertion_mutation(distance_matrix)
+        } else if prob <= 0.79 {
+            self.simple_inversion_mutation(distance_matrix)
+        } else if prob <= 0.99 {
+            self.inversion_mutation(distance_matrix)
+        } else if prob <= 1.0 {
+            self.greedy_sub_tour_mutation(distance_matrix)
+        } else {
+            self
         }
     }
 
     fn swap_mutation(mut self, distance_matrix: &[f64], swaps: usize) -> Self {
-        self.mutation = "swap_mutation".to_string();
-        
         let n = &self.path.len();
         let mut path = self.path.clone();
         for i in 0..swaps {     
@@ -68,12 +78,10 @@ impl Chromossome {
             path.swap(first, second);
         }
         
-        self.update_distance(path, distance_matrix)
+        self.update_distance(path, distance_matrix, "swap_mutation")
     }
 
     fn displacement_mutation(mut self, distance_matrix: &[f64]) -> Self {
-        self.mutation = "displacement_mutation".to_string();
-        
         let n = &self.path.len();
         let mut path = self.path.clone();
         let shift_size = self.rng.random_range(2..n-1);
@@ -85,7 +93,95 @@ impl Chromossome {
         let new_position = (shift_position + distance2) % (n-shift_size);
         path.splice(new_position..new_position, displaced_part);
 
-        self.update_distance(path, distance_matrix)
+        self.update_distance(path, distance_matrix, "displacement_mutation")
+    }
+
+    fn insertion_mutation(mut self, distance_matrix: &[f64]) -> Self {
+        let n = &self.path.len();
+        let mut path = self.path.clone();
+        let old_pos = self.rng.random_range(1..n-1);
+        let mut new_pos = old_pos;
+        while new_pos == old_pos {
+            new_pos = self.rng.random_range(1..n-1);
+        }
+        let city = path.remove(old_pos);
+        path.insert(new_pos, city);
+        
+        self.update_distance(path, distance_matrix, "insertion_mutation")
+    }
+
+    fn simple_inversion_mutation(mut self, distance_matrix: &[f64]) -> Self {
+        let n = &self.path.len();
+        let mut path = self.path.clone();
+
+        let start = self.rng.random_range(0..n-3);
+        let size = self.rng.random_range(2..n-start);
+
+        path[start..start+size].reverse();
+        
+        self.update_distance(path, distance_matrix, "simple_inversion_mutation")
+    }
+
+    fn inversion_mutation(mut self, distance_matrix: &[f64]) -> Self {
+        let n = &self.path.len();
+        let mut path = self.path.clone();
+        let shift_size = self.rng.random_range(2..n-1);
+        let distance2 = self.rng.random_range(0..n-1);
+
+        let shift_position = self.rng.random_range(0..n-shift_size-1);
+        let displaced_reversed_part: Vec<u16> = path.drain(shift_position..shift_position+shift_size).rev().collect();
+        
+        let new_position = (shift_position + distance2) % (n-shift_size);
+        path.splice(new_position..new_position, displaced_reversed_part);
+        
+        self.update_distance(path, distance_matrix, "inversion_mutation")
+    }
+
+    fn greedy_sub_tour_mutation(mut self, distance_matrix: &[f64]) -> Self {
+        let n = &self.path.len();
+        let mut path = self.path.clone();
+
+        let min_sub_tour = 2;
+        let max_sub_tour = (*n as f64).sqrt() as usize;
+        // println!("{:?}", path);
+        let start = self.rng.random_range(0..n-max_sub_tour);
+        let size = self.rng.random_range(min_sub_tour..max_sub_tour.max(min_sub_tour));
+        // println!("n = {} start = {} max_sub_tour = {} size = {}", n, start, max_sub_tour, size);
+        let sub_tour: Vec<u16> = path.drain(start..start+size).collect();
+        // println!("{:?}", sub_tour);
+        
+        let sub_tour_usize: Vec<usize> = sub_tour.iter().map(|&x| x as usize).collect();
+        let first_best = Genetic::find_best_neighbour(distance_matrix, sub_tour[0] as usize, *n, &sub_tour_usize);
+        let second_best = Genetic::find_best_neighbour(distance_matrix, sub_tour[sub_tour.len()-1] as usize, *n, &sub_tour_usize);
+        // println!("first_best {:?}", &first_best);
+        // println!("second_best {:?}", &second_best);
+
+        let first_i = path.iter().position(|&x| x == first_best as u16).unwrap();
+        let second_i = path.iter().position(|&x| x == second_best as u16).unwrap();
+        // println!("first_i {:?}", &first_i);
+        // println!("second_i {:?}", &second_i);
+
+        let mut first_path: Vec<u16> = path.clone();
+        first_path.splice(first_i+1..first_i+1, sub_tour.clone());
+        if first_i + 1 != second_i {
+            let mut second_path: Vec<u16> = path.clone();
+            second_path.splice(second_i..second_i, sub_tour.clone());
+            // println!("first_path {:?}", &first_path);
+            // println!("second_path {:?}", &second_path);
+            let first_path_distance = Genetic::calculate_path_distance(&first_path, distance_matrix);
+            let second_path_distance = Genetic::calculate_path_distance(&second_path, distance_matrix);
+
+            if second_path_distance < first_path_distance {
+                path = second_path;
+            } else {
+                path = first_path
+            }
+        } else {
+            path = first_path
+        }
+        
+        // println!("{:?}\n", path);
+        self.update_distance(path, distance_matrix, "greedy_sub_tour_mutation")
     }
 }
 
@@ -505,7 +601,7 @@ impl Genetic {
         // for i in 0..2 {
         while gen_not_changed_best < gen_not_changed_best_breakpoint {
             let (parent_1, parent_2) = self.select_parents(&population);
-            let children = self.order_based_crossover(&parent_1, &parent_2)
+            let children = self.cycle_crossover(&parent_1, &parent_2)
                                             .mutate(&self.distance_matrix, swap);
             
             if children.get_distance() < worst.get_distance() {
@@ -520,7 +616,7 @@ impl Genetic {
                     best = children;               
                     let mutation = best.get_mutation();
                     self.mutations.insert(mutation.clone());
-                    // println!("{} {} {} {}", &best.get_distance(), self.generations, swap, mutation);
+                    println!("{} {} {} {}", &best.get_distance(), self.generations, swap, mutation);
                     if swap > 1 {
                         swap -= 1;
                     }

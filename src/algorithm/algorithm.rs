@@ -69,6 +69,26 @@ pub trait Algorithm {
         Self::calculate_distance_between_cities(&cities[id1], &cities[id2])
     }
 
+    fn find_best_neighbour(distance_matrix: &[f64], id_city: usize, n: usize, filter: &[usize]) -> usize {
+        let distance_array = Self::get_entire_row_in_matrix(distance_matrix, n, id_city);
+        distance_array.iter()
+                      .enumerate()
+                      .filter(|&(i, _)| i != id_city && !filter.contains(&i))
+                      .min_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+                      .map(|(i, _)| i)
+                      .unwrap()
+    }
+
+    // fn find_n_best_neighbour(distance_matrix: &[f64], id_city: usize, cities_len: usize, n: usize) -> Vec<usize> {
+    //     let distance_array = Self::get_entire_row_in_matrix(distance_matrix, n, id_city);
+    //     let mut connections_tuple = distance_array.iter()
+    //                   .enumerate()
+    //                   .filter(|&(i, _)| i != id_city)
+    //                   .collect();
+        
+    //     connections_tuple.sort_by(|a, b| a.1.partial_cmp(b.1).unwrap());
+    // }
+
     fn create_distance_matrix(cities: &Vec<City>) -> Vec<f64> {
         let n = cities.len();
 
@@ -89,6 +109,12 @@ pub trait Algorithm {
 
     fn get_in_matrix(matrix: &[f64], size: usize, row: usize, column: usize) -> f64 {
         matrix[Self::matrix_index(size, row, column)]
+    }
+
+    fn get_entire_row_in_matrix(matrix: &[f64], size: usize, row: usize) -> Vec<f64> {
+        let start = row  * size;
+        let end = start + size;
+        matrix[start..end].to_vec()
     }
 
     fn matrix_index(size: usize, row: usize, column: usize) -> usize{
