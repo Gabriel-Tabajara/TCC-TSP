@@ -1,7 +1,7 @@
 use std::{collections::{HashMap, HashSet}, time::Instant, usize};
 
 use plotters::prelude::LogScalable;
-use rand::{distr::{weighted::WeightedIndex, Distribution}, rng, rngs::ThreadRng, seq::{index, SliceRandom}, Rng};
+use rand::{distr::{weighted::WeightedIndex, Distribution}, rng, rngs::ThreadRng, seq::{index, IndexedRandom, SliceRandom}, Rng};
 use super::algorithm::{Algorithm, ExecuteResponse};
 use crate::models::city::City;
 
@@ -51,20 +51,20 @@ impl Chromossome {
 
     fn mutate(mut self, distance_matrix: &[f64], swaps: usize) -> Self {
         let prob = self.rng.random_range(0.0..1.0);
-        if prob <= 0.19 {
+        if prob <= 0.18 {
             self.swap_mutation(distance_matrix, swaps)
-        } else if prob <= 0.39 {
+        } else if prob <= 0.36 {
             self.displacement_mutation(distance_matrix)
-        } else if prob <= 0.59 {
+        } else if prob <= 0.54 {
             self.insertion_mutation(distance_matrix)
-        } else if prob <= 0.79 {
+        } else if prob <= 0.72 {
             self.simple_inversion_mutation(distance_matrix)
-        } else if prob <= 0.99 {
+        } else if prob <= 0.96 {
             self.inversion_mutation(distance_matrix)
-        } else if prob <= 1.0 {
+        } else if prob <= 0.98 {
             self.greedy_sub_tour_mutation(distance_matrix)
         } else {
-            self
+            self.greedy_insertion_mutation(distance_matrix)
         }
     }
 
@@ -143,31 +143,25 @@ impl Chromossome {
 
         let min_sub_tour = 2;
         let max_sub_tour = (*n as f64).sqrt() as usize;
-        // println!("{:?}", path);
+
         let start = self.rng.random_range(0..n-max_sub_tour);
         let size = self.rng.random_range(min_sub_tour..max_sub_tour.max(min_sub_tour));
-        // println!("n = {} start = {} max_sub_tour = {} size = {}", n, start, max_sub_tour, size);
+
         let sub_tour: Vec<u16> = path.drain(start..start+size).collect();
-        // println!("{:?}", sub_tour);
         
         let sub_tour_usize: Vec<usize> = sub_tour.iter().map(|&x| x as usize).collect();
         let first_best = Genetic::find_best_neighbour(distance_matrix, sub_tour[0] as usize, *n, &sub_tour_usize);
         let second_best = Genetic::find_best_neighbour(distance_matrix, sub_tour[sub_tour.len()-1] as usize, *n, &sub_tour_usize);
-        // println!("first_best {:?}", &first_best);
-        // println!("second_best {:?}", &second_best);
 
         let first_i = path.iter().position(|&x| x == first_best as u16).unwrap();
         let second_i = path.iter().position(|&x| x == second_best as u16).unwrap();
-        // println!("first_i {:?}", &first_i);
-        // println!("second_i {:?}", &second_i);
 
         let mut first_path: Vec<u16> = path.clone();
         first_path.splice(first_i+1..first_i+1, sub_tour.clone());
         if first_i + 1 != second_i {
             let mut second_path: Vec<u16> = path.clone();
             second_path.splice(second_i..second_i, sub_tour.clone());
-            // println!("first_path {:?}", &first_path);
-            // println!("second_path {:?}", &second_path);
+            
             let first_path_distance = Genetic::calculate_path_distance(&first_path, distance_matrix);
             let second_path_distance = Genetic::calculate_path_distance(&second_path, distance_matrix);
 
@@ -180,8 +174,32 @@ impl Chromossome {
             path = first_path
         }
         
-        // println!("{:?}\n", path);
         self.update_distance(path, distance_matrix, "greedy_sub_tour_mutation")
+    }
+    
+    fn greedy_insertion_mutation(mut self, distance_matrix: &[f64]) -> Self {
+        let n = self.path.len();
+        let mut path = self.path.clone();
+
+        let min_neighbour = 5;
+        let max_neighbour = (n as f64).sqrt() as usize;
+        let size = min_neighbour.max(max_neighbour);
+
+        let city = self.rng.random_range(0..n-1);
+        path.retain(|&x| x != city as u16);
+
+        let near_neighbours = Genetic::find_n_best_neighbour(distance_matrix, city, n, size);
+        
+        let chosen = near_neighbours.choose(&mut self.rng).unwrap();
+        let chosen_i = path.iter().position(|&x| x == *chosen as u16).unwrap();
+        
+        if self.rng.random_bool(0.5) {
+            path.insert(chosen_i+1, city as u16);
+        } else {
+            path.insert(chosen_i, city as u16);
+        }
+        
+        self.update_distance(path, distance_matrix, "greedy_insertion_mutation")
     }
 }
 
@@ -681,7 +699,8 @@ impl Genetic {
     }
 }
 
-// TODO: Mais mutações (greedy)
+// TODO: Lint
+// TODO: Iniciar população com greedy
 impl Algorithm for Genetic {
     fn execute(&mut self) -> ExecuteResponse {
         println!("Execute Genetic");

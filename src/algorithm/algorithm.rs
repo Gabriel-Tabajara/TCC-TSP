@@ -79,15 +79,17 @@ pub trait Algorithm {
                       .unwrap()
     }
 
-    // fn find_n_best_neighbour(distance_matrix: &[f64], id_city: usize, cities_len: usize, n: usize) -> Vec<usize> {
-    //     let distance_array = Self::get_entire_row_in_matrix(distance_matrix, n, id_city);
-    //     let mut connections_tuple = distance_array.iter()
-    //                   .enumerate()
-    //                   .filter(|&(i, _)| i != id_city)
-    //                   .collect();
+    fn find_n_best_neighbour(distance_matrix: &[f64], id_city: usize, cities_len: usize, n: usize) -> Vec<usize> {
+        let distance_array = Self::get_entire_row_in_matrix(distance_matrix, cities_len, id_city);
+        let mut connections_tuple: Vec<(usize, &f64)> = distance_array.iter()
+                      .enumerate()
+                      .filter(|&(i, _)| i != id_city)
+                      .collect();
         
-    //     connections_tuple.sort_by(|a, b| a.1.partial_cmp(b.1).unwrap());
-    // }
+        connections_tuple.sort_by(|a, b| a.1.partial_cmp(b.1).unwrap());
+
+        connections_tuple.iter().take(n).map(|(i,_)| *i).collect()
+    }
 
     fn create_distance_matrix(cities: &Vec<City>) -> Vec<f64> {
         let n = cities.len();
