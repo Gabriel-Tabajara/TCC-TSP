@@ -53,7 +53,6 @@ impl Chromossome {
         &self.mutation
     }
 
-    // Tentar sempre atualizando a distancia
     fn update_distance(mut self, path: Vec<u16>, distance_matrix: &[f64], mutation: &str) -> Self {
         let updated_distance = Genetic::calculate_path_distance(&path, distance_matrix);
         if &updated_distance < &self.distance {
@@ -700,10 +699,9 @@ impl Genetic {
         let mut best = self.get_best_chromossome(&population);
         let mut gen_not_changed_best = 0;
         let mut gen_not_changed_best_limit = self.cities.len();
-        // setar por crossover
         let gen_not_changed_best_breakpoint = 200000;
         let mut swap = initial_swap;
-        // for i in 0..2 {
+
         while gen_not_changed_best < gen_not_changed_best_breakpoint {
             let (parent_1, parent_2) = self.select_parents(&population);
             let children = self
@@ -762,8 +760,8 @@ impl Genetic {
     ) -> Chromossome {
         let mut previous_distance = first_gen.get_distance().clone();
         let mut gen_not_changed_best = 0;
-        let mut gen_not_changed_best_limit = self.cities.len(); // Used to increase randomness
-        let gen_not_changed_best_breakpoint = 500000; // Used to stop the algorithm
+        let mut gen_not_changed_best_limit = self.cities.len();
+        let gen_not_changed_best_breakpoint = 500000;
         let mut swap = initial_swap;
         let mut current_gen = first_gen.clone();
 
@@ -800,7 +798,6 @@ impl Genetic {
     }
 }
 
-// TODO: Lint
 // TODO: Iniciar população com greedy
 impl Algorithm for Genetic {
     fn execute(&mut self) -> ExecuteResponse {
