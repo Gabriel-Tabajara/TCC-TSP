@@ -29,43 +29,43 @@ Roraima	            RR	15
 Distrito Federal*	DF	1
 
 Rondônia RO	52
-                            5   10  20  50  100
-order_based_crossover      
-cycle_crossover
-partially_mapped_crossover
+                            5                   10                 15 20 35  50 75 100
+order_based_crossover       24.57394366780635   24.096649295005058
+cycle_crossover             24.665249575270675
+partially_mapped_crossover  24.25954498879889
+position_based_crossover
 
 Mato Grosso do Sul	MS	79
-                            5   10  20  50  100
-order_based_crossover      
-cycle_crossover
-partially_mapped_crossover
-
-Mato Grosso do Sul	MS	79
-                            5   10  20  50  100
-order_based_crossover      
-cycle_crossover
-partially_mapped_crossover
+                            5                   10                 15 20 35  50 75 100
+order_based_crossover       41.32300596893054   42.857963453757066
+cycle_crossover             40.34238241768806
+partially_mapped_crossover  41.93236687570966
+position_based_crossover
 
 Rio de Janeiro RJ  92
-                            5   10  20  50  100
-order_based_crossover      
-cycle_crossover
-partially_mapped_crossover
+                            5                   10                 15 20 35  50 75 100
+order_based_crossover       17.489413465186644  17.52809423158823
+cycle_crossover             17.3106566273954
+partially_mapped_crossover  17.811017330705337
+position_based_crossover
 
 Tocantins TO	139
-                            5   10  20  50  100
-order_based_crossover      
-cycle_crossover
-partially_mapped_crossover
+                            5                   10                 15 20 35  50 75 100
+order_based_crossover       47.81251165255659   49.04090218337335
+cycle_crossover             49.441730008050044
+partially_mapped_crossover  48.92258263813943
+position_based_crossover
 
 Ceará CE	184
-                            5   10  20  50  100
-order_based_crossover      
-cycle_crossover
+                            5                   10                 15 20 35  50 75 100
+order_based_crossover       42.12211908323737   42.863707510222525
+cycle_crossover             44.30823107727417
 partially_mapped_crossover
+position_based_crossover
 
 Santa Catarina	 SC	295
-                            5   10  20  50  100
-order_based_crossover      
+                            5                   10 15 20 35  50 75 100
+order_based_crossover       47.86919281396915
 cycle_crossover
 partially_mapped_crossover
+position_based_crossover
