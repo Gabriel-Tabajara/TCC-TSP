@@ -14,7 +14,7 @@ impl AlgorithmStrategy {
             "BB" => BranchAndBound::new(cities).execute(),
             "G" => Genetic::new(cities).execute(),
             "SA" => SimulatedAnnealing::new(cities).execute(),
-            _ => panic!("Unknown algorithm")
+            _ => panic!("Unknown algorithm"),
         }
     }
 }

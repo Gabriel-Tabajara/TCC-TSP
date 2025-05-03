@@ -6,7 +6,10 @@ pub struct Coordinates {
 
 impl Coordinates {
     pub fn new(latitude: f32, longitude: f32) -> Self {
-        Coordinates { latitude, longitude }
+        Coordinates {
+            latitude,
+            longitude,
+        }
     }
 
     pub fn get_latitude(&self) -> f32 {
@@ -15,5 +18,5 @@ impl Coordinates {
 
     pub fn get_longitude(&self) -> f32 {
         self.longitude
-    } 
+    }
 }

@@ -9,7 +9,9 @@ pub struct BranchAndBound {
 
 impl BranchAndBound {
     pub fn new(cities: &Vec<City>) -> Self {
-        BranchAndBound { cities: cities.clone() }
+        BranchAndBound {
+            cities: cities.clone(),
+        }
     }
 }
 

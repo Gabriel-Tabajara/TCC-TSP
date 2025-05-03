@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use super::algorithm::{Algorithm,ExecuteResponse};
+use super::algorithm::{Algorithm, ExecuteResponse};
 use crate::models::city::City;
 
 pub struct SimulatedAnnealing {
@@ -9,7 +9,9 @@ pub struct SimulatedAnnealing {
 
 impl SimulatedAnnealing {
     pub fn new(cities: &Vec<City>) -> Self {
-        SimulatedAnnealing { cities: cities.clone() }
+        SimulatedAnnealing {
+            cities: cities.clone(),
+        }
     }
 }
 impl Algorithm for SimulatedAnnealing {

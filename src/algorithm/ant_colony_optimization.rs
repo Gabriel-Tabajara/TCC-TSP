@@ -9,7 +9,9 @@ pub struct AntColonyOptimization {
 
 impl AntColonyOptimization {
     pub fn new(cities: &Vec<City>) -> Self {
-        AntColonyOptimization { cities: cities.clone() }
+        AntColonyOptimization {
+            cities: cities.clone(),
+        }
     }
 }
 
