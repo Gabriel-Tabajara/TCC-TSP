@@ -1,7 +1,7 @@
-Path: [18, 61, 25, 74, 15, 73, 27, 72, 53, 69, 32, 66, 8, 34, 48, 50, 12, 20, 38, 44, 11, 70, 62, 17, 57, 33, 4, 36, 26, 58, 42, 68, 16, 23, 19, 43, 39, 52, 10, 54, 21, 45, 28, 9, 0, 71, 55, 14, 1, 40, 35, 67, 31, 63, 41, 7, 24, 47, 51, 30, 13, 22, 59, 37, 64, 46, 5, 2, 65, 29, 60, 6, 56, 49, 3, 18]
-Distance: 10.643218278027888
-Total Time: 22.299793328
-Population Size: 18
-Generations: 569773
+Path: [74, 25, 61, 18, 3, 49, 6, 56, 32, 66, 8, 26, 34, 20, 58, 42, 68, 38, 36, 4, 60, 29, 65, 2, 5, 64, 46, 33, 57, 62, 17, 37, 59, 22, 13, 30, 51, 47, 24, 7, 41, 63, 31, 67, 35, 40, 11, 70, 44, 16, 19, 23, 1, 14, 55, 71, 0, 9, 28, 45, 21, 54, 10, 52, 39, 43, 12, 50, 48, 69, 53, 72, 27, 73, 15, 74]
+Distance: 10.592898442290265
+Total Time: 9.385205689
+Population Size: 5
+Generations: 295660
 Crossover: cycle_crossover
-Mutations: {"swap_mutation", "displacement_mutation"}
+Mutations: {"greedy_insertion_mutation", "swap_mutation", "displacement_mutation", "inversion_mutation", "simple_inversion_mutation", "", "insertion_mutation", "greedy_sub_tour_mutation"}
