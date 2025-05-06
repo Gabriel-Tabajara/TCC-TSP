@@ -294,7 +294,6 @@ impl Genetic {
 
                 current_city = chosen.clone();
                 path.push(current_city);
-                println!("path len {}", path.len());
             }
 
             let path_u16 = path.iter().map(|&x| x as u16).collect::<Vec<u16>>().clone();
@@ -303,7 +302,6 @@ impl Genetic {
                 path_u16.clone(),
                 Self::calculate_path_distance(&path_u16, &self.distance_matrix),
             ));
-            // println!("Chromossome created! {} {:?}", population.len(), path_u16);
         }
 
         population
@@ -848,11 +846,12 @@ impl Algorithm for Genetic {
         if len_cities > 1000 {
             population_size = 1;
         } else {
-            population_size = 300;
+            population_size = 100;
         }
         self.distance_matrix = Self::create_distance_matrix(&self.cities);
 
-        let mut population = self.create_greedy_population(population_size, greedy_range);
+        let mut population = self.create_random_population(population_size);
+        // let mut population = self.create_greedy_population(population_size, greedy_range);
 
         let first_gen_best_path = population[0].get_path().clone();
 
@@ -865,9 +864,13 @@ impl Algorithm for Genetic {
         }
 
         let metadata = format!(
-            "Population Size: {}\nGenerations: {}\nCrossover: {}\nMutations: {:?}\nGreedy Start Range: {}",
-            population_size, self.generations, self.crossover, self.mutations, greedy_range
+            "Population Size: {}\nGenerations: {}\nCrossover: {}\nMutations: {:?}\n",
+            population_size, self.generations, self.crossover, self.mutations
         );
+        // let metadata = format!(
+        //     "Population Size: {}\nGenerations: {}\nCrossover: {}\nMutations: {:?}\nGreedy Start Range: {}",
+        //     population_size, self.generations, self.crossover, self.mutations, greedy_range
+        // );
 
         let best = self.get_best_chromossome(&population);
 

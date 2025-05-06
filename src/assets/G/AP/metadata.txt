@@ -1,8 +1,7 @@
-Path: [13, 9, 5, 15, 7, 12, 6, 10, 3, 4, 2, 14, 11, 0, 1, 8, 13]
+Path: [9, 5, 15, 7, 12, 6, 10, 3, 4, 2, 14, 11, 0, 1, 8, 13, 9]
 Distance: 11.707408088402556
-Total Time: 1.5929358310000001
-Population Size: 1
-Generations: 500597
-Crossover: 
-Mutations: {"insertion_mutation", "simple_inversion_mutation", "inversion_mutation", "greedy_insertion_mutation"}
-Greedy Start Range: 1
+Total Time: 2.46902574
+Population Size: 100
+Generations: 231820
+Crossover: cycle_crossover
+Mutations: {"insertion_mutation", "", "simple_inversion_mutation", "greedy_sub_tour_mutation", "inversion_mutation", "swap_mutation"}
