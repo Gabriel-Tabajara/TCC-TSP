@@ -12,7 +12,7 @@ use rand::{
     distr::{Distribution, weighted::WeightedIndex},
     rng,
     rngs::ThreadRng,
-    seq::{IndexedRandom, SliceRandom, index},
+    seq::{IndexedRandom, SliceRandom},
 };
 
 #[derive(Debug, Clone)]
@@ -221,7 +221,7 @@ impl Chromossome {
         let city = self.rng.random_range(0..n - 1);
         path.retain(|&x| x != city as u16);
 
-        let near_neighbours = Genetic::find_n_best_neighbour(distance_matrix, city, n, size);
+        let near_neighbours = Genetic::find_n_best_neighbours(distance_matrix, city, n, size);
 
         let chosen = near_neighbours.choose(&mut self.rng).unwrap();
         let chosen_i = path.iter().position(|&x| x == *chosen as u16).unwrap();
@@ -272,6 +272,43 @@ impl Genetic {
         population
     }
 
+    fn create_greedy_population(&mut self, n: usize, greedy_range: usize) -> Vec<Chromossome> {
+        let mut population: Vec<Chromossome> = Vec::with_capacity(n);
+        let cities_len = self.cities.len();
+
+        while population.len() < n {
+            let greedy_n: usize = self.rng.random_range(1..greedy_range + 1);
+            let mut current_city = self.rng.random_range(0..cities_len - 1);
+
+            let mut path = vec![current_city];
+            while path.len() < cities_len {
+                let near_neighbours = Genetic::find_n_best_neighbours_with_filter(
+                    &self.distance_matrix,
+                    current_city as usize,
+                    cities_len,
+                    greedy_n,
+                    &path,
+                );
+
+                let chosen = near_neighbours.choose(&mut self.rng).unwrap();
+
+                current_city = chosen.clone();
+                path.push(current_city);
+                println!("path len {}", path.len());
+            }
+
+            let path_u16 = path.iter().map(|&x| x as u16).collect::<Vec<u16>>().clone();
+
+            population.push(Chromossome::new(
+                path_u16.clone(),
+                Self::calculate_path_distance(&path_u16, &self.distance_matrix),
+            ));
+            // println!("Chromossome created! {} {:?}", population.len(), path_u16);
+        }
+
+        population
+    }
+
     fn get_best_chromossome(&self, population: &[Chromossome]) -> Chromossome {
         population
             .iter()
@@ -289,9 +326,13 @@ impl Genetic {
     }
 
     fn select_parents(&mut self, population: &[Chromossome]) -> (Chromossome, Chromossome) {
-        let mut shuffle_result = population.to_vec();
-        shuffle_result.shuffle(&mut self.rng);
-        (shuffle_result[0].clone(), shuffle_result[1].clone())
+        let n = population.len();
+        let parent_1 = self.rng.random_range(0..n - 1);
+        let mut parent_2 = parent_1;
+        while parent_1 == parent_2 {
+            parent_2 = self.rng.random_range(0..n - 1);
+        }
+        (population[parent_1].clone(), population[parent_2].clone())
     }
 
     // Muito demorado e ruim
@@ -701,7 +742,6 @@ impl Genetic {
         let mut gen_not_changed_best_limit = self.cities.len();
         let gen_not_changed_best_breakpoint = 200000;
         let mut swap = initial_swap;
-
         while gen_not_changed_best < gen_not_changed_best_breakpoint {
             let (parent_1, parent_2) = self.select_parents(&population);
             let children = self
@@ -720,13 +760,13 @@ impl Genetic {
                     best = children;
                     let mutation = best.get_mutation();
                     self.mutations.insert(mutation.clone());
-                    println!(
-                        "{} {} {} {}",
-                        &best.get_distance(),
-                        self.generations,
-                        swap,
-                        mutation
-                    );
+                    // println!(
+                    //     "{} {} {} {}",
+                    //     &best.get_distance(),
+                    //     self.generations,
+                    //     swap,
+                    //     mutation
+                    // );
                     if swap > 1 {
                         swap -= 1;
                     }
@@ -798,21 +838,21 @@ impl Genetic {
     }
 }
 
-// TODO: Iniciar população com greedy
 impl Algorithm for Genetic {
     fn execute(&mut self) -> ExecuteResponse {
         println!("Execute Genetic");
         let start_time = Instant::now();
         let len_cities = self.cities.len();
+        let greedy_range = ((len_cities as f32).sqrt() as usize).max(5);
         let population_size;
         if len_cities > 1000 {
             population_size = 1;
         } else {
-            population_size = 5;
+            population_size = 300;
         }
         self.distance_matrix = Self::create_distance_matrix(&self.cities);
 
-        let mut population = self.create_random_population(population_size);
+        let mut population = self.create_greedy_population(population_size, greedy_range);
 
         let first_gen_best_path = population[0].get_path().clone();
 
@@ -825,8 +865,8 @@ impl Algorithm for Genetic {
         }
 
         let metadata = format!(
-            "Population Size: {}\nGenerations: {}\nCrossover: {}\nMutations: {:?}",
-            population_size, self.generations, self.crossover, self.mutations
+            "Population Size: {}\nGenerations: {}\nCrossover: {}\nMutations: {:?}\nGreedy Start Range: {}",
+            population_size, self.generations, self.crossover, self.mutations, greedy_range
         );
 
         let best = self.get_best_chromossome(&population);

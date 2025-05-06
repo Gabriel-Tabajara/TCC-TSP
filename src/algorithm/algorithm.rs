@@ -1,6 +1,7 @@
 use crate::models::city::City;
 use std::time::Duration;
 
+#[derive(Clone)]
 pub struct ExecuteResponse {
     initial_path: Vec<u16>,
     final_path: Vec<u16>,
@@ -96,17 +97,27 @@ pub trait Algorithm {
             .unwrap()
     }
 
-    fn find_n_best_neighbour(
+    fn find_n_best_neighbours(
         distance_matrix: &[f64],
         id_city: usize,
         cities_len: usize,
         n: usize,
     ) -> Vec<usize> {
+        Self::find_n_best_neighbours_with_filter(distance_matrix, id_city, cities_len, n, &[])
+    }
+
+    fn find_n_best_neighbours_with_filter(
+        distance_matrix: &[f64],
+        id_city: usize,
+        cities_len: usize,
+        n: usize,
+        filter: &[usize],
+    ) -> Vec<usize> {
         let distance_array = Self::get_entire_row_in_matrix(distance_matrix, cities_len, id_city);
         let mut connections_tuple: Vec<(usize, &f64)> = distance_array
             .iter()
             .enumerate()
-            .filter(|&(i, _)| i != id_city)
+            .filter(|&(i, _)| i != id_city && !filter.contains(&i))
             .collect();
 
         connections_tuple.sort_by(|a, b| a.1.partial_cmp(b.1).unwrap());
