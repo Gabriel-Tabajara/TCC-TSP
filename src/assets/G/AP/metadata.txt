@@ -1,7 +1,7 @@
 Path: [9, 5, 15, 7, 12, 6, 10, 3, 4, 2, 14, 11, 0, 1, 8, 13, 9]
 Distance: 11.707408088402556
-Total Time: 5.977988526
-Population Size: 5
-Generations: 374506
-Crossover: order_crossover
-Mutations: ["swap_mutation", "displacement_mutation"]
+Total Time: 2.46902574
+Population Size: 100
+Generations: 231820
+Crossover: cycle_crossover
+Mutations: {"insertion_mutation", "", "simple_inversion_mutation", "greedy_sub_tour_mutation", "inversion_mutation", "swap_mutation"}

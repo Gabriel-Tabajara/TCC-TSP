@@ -1,29 +1,44 @@
-mod models;
 mod algorithm;
+mod models;
 
-use models::{city::City, coordinates::Coordinates, uf::{UFEnum, UF}, graph_metadata::GraphMetadata};
+use algorithm::algorithm_strategy::AlgorithmStrategy;
 use clap::Parser;
 use core::f32;
-use std::{fs::{File, create_dir_all}, error::Error, iter::once, path::Path};
-use algorithm::algorithm_strategy::AlgorithmStrategy;
 use csv::Reader;
+use models::{
+    city::City,
+    coordinates::Coordinates,
+    graph_metadata::GraphMetadata,
+    uf::{UF, UFEnum},
+};
+use std::{
+    error::Error,
+    fs::{File, create_dir_all},
+    iter::once,
+    path::Path,
+};
 // update to just the used ones
 use plotters::prelude::*;
 
 #[derive(Parser)]
 #[command(name = "Optimizer")]
 struct Args {
-    #[arg(short='a', long, default_value="G")]
+    #[arg(short = 'a', long, default_value = "G")]
     algorithm: String,
 
-    #[arg(short='u', long, default_value="BRAZIL")]
+    #[arg(short = 'u', long, default_value = "BRAZIL")]
     uf: String,
 
-    #[arg(short='p', long)]
-    plot: bool
+    #[arg(short = 'p', long)]
+    plot: bool,
 }
- 
-fn plot_state(cities: &Vec<City>, cities_path: &[u16], file_path: &str, uf: &UF) -> Result<(), Box<dyn Error>> {
+
+fn plot_state(
+    cities: &Vec<City>,
+    cities_path: &[u16],
+    file_path: &str,
+    uf: &UF,
+) -> Result<(), Box<dyn Error>> {
     let (min_x, max_x): (f32, f32) = uf.get_min_max_longitude().clone();
     let (min_y, max_y): (f32, f32) = uf.get_min_max_latitude().clone();
     let image_size = (1024, 768);
@@ -36,29 +51,33 @@ fn plot_state(cities: &Vec<City>, cities_path: &[u16], file_path: &str, uf: &UF)
     let image = BitMapBackend::new(file_path, image_size).into_drawing_area();
     image.fill(&WHITE)?;
 
-    let latitudes_array: Vec<f32> = cities.iter()
+    let latitudes_array: Vec<f32> = cities
+        .iter()
         .map(|city| city.get_coordinates().get_latitude())
         .collect();
 
-    let longitudes_array: Vec<f32> = cities.iter()
+    let longitudes_array: Vec<f32> = cities
+        .iter()
         .map(|city| city.get_coordinates().get_longitude())
         .collect();
 
-    let path_lines: Vec<(f32, f32)> = cities_path.iter()
-                                                 .map(|&id| {
-                                                    let coordinates = cities[id as usize].get_coordinates();
-                                                    (coordinates.get_longitude(), coordinates.get_latitude())
-                                                 })
-                                                 .collect();
+    let path_lines: Vec<(f32, f32)> = cities_path
+        .iter()
+        .map(|&id| {
+            let coordinates = cities[id as usize].get_coordinates();
+            (coordinates.get_longitude(), coordinates.get_latitude())
+        })
+        .collect();
 
     let mut chart = ChartBuilder::on(&image)
         .caption("Current State Graph", (font_style, caption_font_size))
         .margin(10)
         .x_label_area_size(70)
         .y_label_area_size(70)
-        .build_cartesian_2d(min_x-1.0..max_x+1.0, min_y-1.0..max_y+1.0)?;
+        .build_cartesian_2d(min_x - 1.0..max_x + 1.0, min_y - 1.0..max_y + 1.0)?;
 
-    chart.configure_mesh()
+    chart
+        .configure_mesh()
         .x_desc("Longitude")
         .x_label_style((font_style, y_x_font_size))
         .y_desc("Latitude")
@@ -66,9 +85,10 @@ fn plot_state(cities: &Vec<City>, cities_path: &[u16], file_path: &str, uf: &UF)
         .draw()?;
 
     chart.draw_series(
-        longitudes_array.iter().zip(latitudes_array.iter()).map(|(&x, &y)| {
-            Circle::new((x, y), 2, RED.filled())
-        }),
+        longitudes_array
+            .iter()
+            .zip(latitudes_array.iter())
+            .map(|(&x, &y)| Circle::new((x, y), 2, RED.filled())),
     )?;
 
     chart.draw_series(once(PathElement::new(path_lines, &BLUE)))?;
@@ -89,18 +109,14 @@ fn read_csv_cities(path: &str) -> Vec<City> {
     for record in records.iter() {
         match record {
             Ok(city) => {
-                cities.push(
-                    City::new(
-                        id, 
-                        UF::get_uf_from_code(
-                            city[5].parse::<u8>().unwrap()
-                        ).unwrap(),
-                        Coordinates::new(
-                            city[2].parse::<f32>().unwrap(),
-                            city[3].parse::<f32>().unwrap()
-                    )
-                    )
-                );
+                cities.push(City::new(
+                    id,
+                    UF::get_uf_from_code(city[5].parse::<u8>().unwrap()).unwrap(),
+                    Coordinates::new(
+                        city[2].parse::<f32>().unwrap(),
+                        city[3].parse::<f32>().unwrap(),
+                    ),
+                ));
             }
             Err(err) => {
                 eprintln!("Error reading city in {} file: {}", path, err);
@@ -113,7 +129,11 @@ fn read_csv_cities(path: &str) -> Vec<City> {
 }
 
 fn retrieve_cities_for_uf(uf: &UFEnum, cities: &Vec<City>) -> Vec<City> {
-    cities.iter().filter(|city| city.get_uf().get_uf_enum() == uf).cloned().collect()
+    cities
+        .iter()
+        .filter(|city| city.get_uf().get_uf_enum() == uf)
+        .cloned()
+        .collect()
 }
 
 fn main() {
@@ -127,20 +147,30 @@ fn main() {
     if *uf.get_uf_enum() != UFEnum::BRAZIL {
         cities = retrieve_cities_for_uf(&uf.get_uf_enum(), &cities);
     }
-    
-    let cities_result = AlgorithmStrategy::execute_algorithm(algorithm, &cities);    
+
+    let cities_result = AlgorithmStrategy::execute_algorithm(algorithm, &cities);
 
     if plot {
-        let folder = format!("src/assets/{}/{}", algorithm, args.uf.as_str().to_uppercase());
+        let folder = format!(
+            "src/assets/{}/{}",
+            algorithm,
+            args.uf.as_str().to_uppercase()
+        );
 
         let mut best_distance_in_file = 0.0;
+        let mut best_time_in_file = 0.0;
         let metadata_path = format!("{}/metadata.txt", folder);
         let folder_exists = Path::new(&metadata_path).exists();
         if folder_exists {
-            best_distance_in_file = GraphMetadata::get_distance_from_file(metadata_path);
+            best_distance_in_file = GraphMetadata::get_distance_from_file(&metadata_path);
+            best_time_in_file = GraphMetadata::get_time_from_file(&metadata_path);
         }
 
-        if !folder_exists || (best_distance_in_file > *cities_result.get_distance()) {
+        if !folder_exists
+            || (best_distance_in_file > *cities_result.get_distance())
+            || (best_distance_in_file == *cities_result.get_distance())
+                && best_time_in_file > cities_result.get_total_time().as_secs_f64()
+        {
             let mut initial_path = cities_result.get_initial_path().clone();
             initial_path.push(initial_path[0]);
 
@@ -151,26 +181,27 @@ fn main() {
                 &cities,
                 &final_path,
                 format!("{}/final.png", folder).as_str(),
-                &uf)
+                &uf,
+            )
             .unwrap();
 
             plot_state(
                 &cities,
                 &initial_path,
                 format!("{}/inicial.png", folder).as_str(),
-                &uf)
+                &uf,
+            )
             .unwrap();
 
             let metadata = GraphMetadata::new(
-                final_path, 
-                cities_result.get_distance().clone(), 
+                final_path,
+                cities_result.get_distance().clone(),
                 cities_result.get_total_time().clone(),
-                cities_result.get_metadata_info().clone()
+                cities_result.get_metadata_info().clone(),
             );
 
             metadata.generate_file(format!("{}/metadata.txt", folder));
         }
-
     }
 
     println!("{}", cities_result.get_distance());
