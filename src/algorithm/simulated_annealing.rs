@@ -30,22 +30,86 @@ impl Solution {
         &self.distance
     }
 
-    fn update_distance(mut self, path: Vec<u16>, distance_matrix: &[f64]) -> Self {
-        let updated_distance = SimulatedAnnealing::calculate_path_distance(&path, distance_matrix);
+    fn update_distance(mut self, distance_matrix: &[f64]) -> Self {
+        let updated_distance =
+            SimulatedAnnealing::calculate_path_distance(&self.path, distance_matrix);
         self.distance = updated_distance;
-        self.path = path;
         self
     }
 
     fn swap(mut self, distance_matrix: &[f64]) -> Self {
         let n = &self.path.len();
-        let mut path = self.path.clone();
         let first = self.rng.random_range(0..n - 1);
         let second = self.rng.random_range(0..n - 1);
 
-        path.swap(first, second);
+        self.path.swap(first, second);
 
-        self.update_distance(path, distance_matrix)
+        self.update_distance(distance_matrix)
+    }
+
+    fn swap_sampling(mut self, distance_matrix: &[f64], city_i: u16, city_j: u16) -> Self {
+        let city_i_index = self.path.iter().position(|&x| x == city_i).unwrap();
+        let city_j_index = self.path.iter().position(|&x| x == city_j).unwrap();
+
+        self.path.swap(city_i_index, city_j_index);
+
+        self.update_distance(distance_matrix)
+    }
+
+    fn block_insert_sampling(mut self, distance_matrix: &[f64], city_i: u16, city_j: u16) -> Self {
+        let city_i_index = self.path.iter().position(|&x| x == city_i).unwrap();
+        let city_j_index = self.path.iter().position(|&x| x == city_j).unwrap();
+        let path_len = self.path.len();
+
+        let random = self.rng.random_range(1..10);
+        let block_size = random
+            .min(((city_i_index as isize - city_j_index as isize - 1) as isize).abs() as usize);
+
+        if block_size == 0 {
+            return self;
+        }
+
+        if city_j_index + block_size < path_len {
+            let displaced_part: Vec<u16> = self
+                .path
+                .drain(city_j_index..city_j_index + block_size)
+                .collect();
+            if city_j_index < city_i_index {
+                self.path.splice(
+                    city_i_index - block_size..city_i_index - block_size,
+                    displaced_part,
+                );
+            } else {
+                self.path.splice(city_i_index..city_i_index, displaced_part);
+            }
+        } else {
+            let mut block = vec![];
+            for i in 0..block_size {
+                let pos = (city_j_index + i) % path_len;
+                if self.path[pos] == city_i {
+                    break;
+                }
+                block.push(self.path[pos]);
+            }
+            self.path.retain(|x| !block.contains(x));
+            let new_city_index = self.path.iter().position(|&x| x == city_i).unwrap();
+            self.path.splice(new_city_index..new_city_index, block);
+        }
+
+        self.update_distance(distance_matrix)
+    }
+
+    fn inverse_sampling(mut self, distance_matrix: &[f64], city_i: u16, city_j: u16) -> Self {
+        let city_i_index = self.path.iter().position(|&x| x == city_i).unwrap();
+        let city_j_index = self.path.iter().position(|&x| x == city_j).unwrap();
+
+        if city_i_index < city_j_index {
+            self.path[city_i_index + 1..city_j_index + 1].reverse();
+        } else {
+            self.path[city_j_index + 1..city_i_index + 1].reverse();
+        }
+
+        self.update_distance(distance_matrix)
     }
 }
 
@@ -65,14 +129,37 @@ impl SimulatedAnnealing {
     }
 
     // heuristic augmented instance-based sampling strategy
-    fn create_new_solution_by_heuristic_strategy(&mut self, city: u16, solution: Solution) {
+    fn create_new_solution_by_heuristic_strategy(
+        &mut self,
+        city: u16,
+        solution: &Solution,
+    ) -> Solution {
         let solution_y = self.create_random_solution();
         let x_path = solution.get_path();
         let y_path = solution_y.get_path();
         let pos_city_in_x = x_path.iter().position(|&x| x == city).unwrap();
         let pos_city_in_y = y_path.iter().position(|&x| x == city).unwrap();
-        let city_j = y_path[(pos_city_in_y + 1) % y_path.len()];
-        if city_j == x_path[(pos_city_in_x + 1) % x_path.len()] {}
+        let mut city_j = y_path[(pos_city_in_y + 1) % y_path.len()];
+        if city_j == x_path[(pos_city_in_x + 1) % x_path.len()] {
+            let leading_index;
+            if pos_city_in_y == 0 {
+                leading_index = y_path.len() - 1;
+            } else {
+                leading_index = pos_city_in_y - 1
+            }
+            city_j = y_path[(leading_index) % y_path.len()];
+        }
+        let x_1 = solution
+            .clone()
+            .inverse_sampling(&self.distance_matrix, city, city_j);
+        let x_2 = solution
+            .clone()
+            .swap_sampling(&self.distance_matrix, city, city_j);
+        let x_3 = solution
+            .clone()
+            .block_insert_sampling(&self.distance_matrix, city, city_j);
+
+        self.find_best_solution(&[x_1, x_2, x_3])
     }
 
     fn create_random_solution(&mut self) -> Solution {
@@ -181,20 +268,53 @@ impl Algorithm for SimulatedAnnealing {
         let a_sol = self.create_solutions(population_size);
         let mut tempreture_matrix =
             self.create_temperature_lists_matrix(population_size, temp_list_len);
-        let mut a_city = vec![0; population_size];
+        let mut a_city: Vec<u16> = vec![0; population_size];
         let a_mcl = self.create_mcl_list(pos, markov_chain_len, generations);
-        let best = self.find_best_solution(&a_sol);
+        let mut best = self.find_best_solution(&a_sol);
+        let initial_best = best.clone();
         for g in 0..generations {
             for i in 0..population_size {
-                let current_solution = &a_sol[i];
-                let temperature = tempreture_matrix[g].pop().unwrap();
-                let (mut k, mut c, mut s) = (0, 0, 0);
+                let mut current_solution = a_sol[i].clone();
+                let temperature = tempreture_matrix[i].pop().unwrap();
+                let (mut k, mut c, mut s) = (0, 0, 0.0);
                 while k < a_mcl[g] {
-                    a_city[i] = (a_city[i] + 1) % cities_len;
+                    a_city[i] = (a_city[i] + 1) % (cities_len as u16);
+                    let solution_y = self
+                        .create_new_solution_by_heuristic_strategy(a_city[i], &current_solution);
+
+                    let current_distance = current_solution.get_distance();
+                    let y_distance = solution_y.get_distance();
+                    let distance_diff = y_distance - current_distance;
+                    let p;
+                    if y_distance < current_distance {
+                        p = 1.0;
+                    } else {
+                        p = (-distance_diff / temperature.0).exp()
+                    }
+                    let random = self.rng.random_range(0.0..1.0);
+                    if random < p {
+                        if distance_diff > 0.0 {
+                            s += distance_diff / random.ln();
+                            c += 1;
+                        } else if current_distance < best.get_distance() {
+                            best = current_solution.clone();
+                        }
+                        current_solution = solution_y.clone();
+                    }
                     k += 1;
+                }
+                if c > 0 {
+                    tempreture_matrix[i].pop();
+                    tempreture_matrix[i].push(OrderedFloat(s / c as f64));
                 }
             }
         }
-        ExecuteResponse::new(vec![], vec![], 0.0, start_time.elapsed(), String::new())
+        ExecuteResponse::new(
+            initial_best.get_path().clone(),
+            best.get_path().clone(),
+            best.get_distance().clone(),
+            start_time.elapsed(),
+            String::new(),
+        )
     }
 }
