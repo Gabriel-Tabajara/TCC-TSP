@@ -97,7 +97,7 @@ fn plot_state(
     Ok(())
 }
 
-fn read_csv_cities(path: &str) -> Vec<City> {
+fn read_csv_cities(path: &str, uf: &UF) -> Vec<City> {
     let file = File::open(path.to_string()).expect("Failed to open file");
     let mut reader = Reader::from_reader(file);
 
@@ -109,32 +109,36 @@ fn read_csv_cities(path: &str) -> Vec<City> {
     for record in records.iter() {
         match record {
             Ok(city) => {
-                cities.push(City::new(
-                    id,
-                    UF::get_uf_from_code(city[5].parse::<u8>().unwrap()).unwrap(),
-                    Coordinates::new(
-                        city[2].parse::<f32>().unwrap(),
-                        city[3].parse::<f32>().unwrap(),
-                    ),
-                ));
+                let city_uf = UF::get_uf_from_code(city[5].parse::<u8>().unwrap()).unwrap();
+                if uf.get_uf_enum() == city_uf.get_uf_enum() || *uf.get_uf_enum() == UFEnum::BRAZIL
+                {
+                    cities.push(City::new(
+                        id,
+                        UF::get_uf_from_code(city[5].parse::<u8>().unwrap()).unwrap(),
+                        Coordinates::new(
+                            city[2].parse::<f32>().unwrap(),
+                            city[3].parse::<f32>().unwrap(),
+                        ),
+                    ));
+                    id += 1;
+                }
             }
             Err(err) => {
                 eprintln!("Error reading city in {} file: {}", path, err);
             }
         }
-        id += 1;
     }
 
     cities
 }
 
-fn retrieve_cities_for_uf(uf: &UFEnum, cities: &Vec<City>) -> Vec<City> {
-    cities
-        .iter()
-        .filter(|city| city.get_uf().get_uf_enum() == uf)
-        .cloned()
-        .collect()
-}
+// fn retrieve_cities_for_uf(uf: &UFEnum, cities: &Vec<City>) -> Vec<City> {
+//     cities
+//         .iter()
+//         .filter(|city| city.get_uf().get_uf_enum() == uf)
+//         .cloned()
+//         .collect()
+// }
 
 fn main() {
     let args = Args::parse();
@@ -142,11 +146,11 @@ fn main() {
     let uf = UF::get_uf_from_str(args.uf.as_str()).unwrap();
     let plot = args.plot;
 
-    let mut cities = read_csv_cities("src/assets/cities.csv");
+    let cities = read_csv_cities("src/assets/cities.csv", &uf);
 
-    if *uf.get_uf_enum() != UFEnum::BRAZIL {
-        cities = retrieve_cities_for_uf(&uf.get_uf_enum(), &cities);
-    }
+    // if *uf.get_uf_enum() != UFEnum::BRAZIL {
+    //     cities = retrieve_cities_for_uf(&uf.get_uf_enum(), &cities);
+    // }
 
     let cities_result = AlgorithmStrategy::execute_algorithm(algorithm, &cities);
 

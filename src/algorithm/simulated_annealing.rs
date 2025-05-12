@@ -1,7 +1,12 @@
 use std::{collections::BinaryHeap, time::Instant};
 
+use kiddo::KdTree;
 use ordered_float::OrderedFloat;
-use rand::{Rng, rng, rngs::ThreadRng, seq::SliceRandom};
+use rand::{
+    Rng, rng,
+    rngs::ThreadRng,
+    seq::{IndexedRandom, SliceRandom},
+};
 
 use super::algorithm::{Algorithm, ExecuteResponse};
 use crate::models::city::City;
@@ -116,6 +121,7 @@ impl Solution {
 pub struct SimulatedAnnealing {
     cities: Vec<City>,
     distance_matrix: Vec<f64>,
+    kd_tree: KdTree<f32, 2>,
     rng: ThreadRng,
 }
 
@@ -124,6 +130,7 @@ impl SimulatedAnnealing {
         SimulatedAnnealing {
             cities: cities.clone(),
             distance_matrix: vec![],
+            kd_tree: SimulatedAnnealing::create_kd_tree(cities.clone()),
             rng: rng(),
         }
     }
@@ -133,8 +140,10 @@ impl SimulatedAnnealing {
         &mut self,
         city: u16,
         solution: &Solution,
+        a_sol: &Vec<Solution>,
     ) -> Solution {
-        let solution_y = self.create_random_solution();
+        let random = self.rng.random_range(0..a_sol.len() - 1);
+        let solution_y = &a_sol[random];
         let x_path = solution.get_path();
         let y_path = solution_y.get_path();
         let pos_city_in_x = x_path.iter().position(|&x| x == city).unwrap();
@@ -171,7 +180,38 @@ impl SimulatedAnnealing {
         )
     }
 
-    fn create_solutions(&mut self, n: usize) -> Vec<Solution> {
+    fn create_greedy_solution(&mut self, greedy_range: usize) -> Solution {
+        let cities_len = self.cities.len();
+
+        let greedy_n: usize = self.rng.random_range(1..greedy_range + 1);
+        let mut current_city = self.rng.random_range(0..cities_len - 1);
+
+        let mut path = vec![current_city];
+        let mut visited_cities = vec![&self.cities[current_city]];
+        while path.len() < cities_len {
+            let near_neighbours = SimulatedAnnealing::find_best_n_neighbours_kd_tree(
+                &self.kd_tree,
+                &self.cities[current_city],
+                greedy_n,
+                &visited_cities,
+            );
+
+            let chosen = near_neighbours.choose(&mut self.rng).unwrap();
+
+            current_city = chosen.clone();
+            path.push(current_city);
+            visited_cities.push(&self.cities[current_city]);
+        }
+
+        let path_u16 = path.iter().map(|&x| x as u16).collect::<Vec<u16>>().clone();
+
+        Solution::new(
+            path_u16.clone(),
+            Self::calculate_path_distance(&path_u16, &self.distance_matrix),
+        )
+    }
+
+    fn create_random_solutions(&mut self, n: usize) -> Vec<Solution> {
         let mut solutions = vec![];
         while solutions.len() < n {
             solutions.push(self.create_random_solution());
@@ -179,8 +219,20 @@ impl SimulatedAnnealing {
         solutions
     }
 
-    fn create_temperature_list(&mut self, len: usize) -> BinaryHeap<OrderedFloat<f64>> {
-        let mut current_solution = self.create_random_solution();
+    fn create_greedy_solutions(&mut self, n: usize, greedy_range: usize) -> Vec<Solution> {
+        let mut solutions = vec![];
+        while solutions.len() < n {
+            solutions.push(self.create_greedy_solution(greedy_range));
+        }
+        solutions
+    }
+
+    fn create_temperature_list(
+        &mut self,
+        len: usize,
+        greedy_range: usize,
+    ) -> BinaryHeap<OrderedFloat<f64>> {
+        let mut current_solution = self.create_greedy_solution(greedy_range);
         let mut priority_list = vec![];
 
         while priority_list.len() < 2 * len {
@@ -203,11 +255,12 @@ impl SimulatedAnnealing {
         &mut self,
         size: usize,
         temp_list_len: usize,
+        greedy_range: usize,
     ) -> Vec<BinaryHeap<OrderedFloat<f64>>> {
         let mut matrix: Vec<BinaryHeap<OrderedFloat<f64>>> = Vec::with_capacity(size);
 
         for _ in 0..size {
-            let temperature_list = self.create_temperature_list(temp_list_len);
+            let temperature_list = self.create_temperature_list(temp_list_len, greedy_range);
             matrix.push(temperature_list.into_iter().take(temp_list_len).collect());
         }
 
@@ -244,12 +297,12 @@ impl SimulatedAnnealing {
     }
 }
 
-// Falta fazer com greedy no inicio que nem no paper, e parar de gerar cidades random
 impl Algorithm for SimulatedAnnealing {
     fn execute(&mut self) -> ExecuteResponse {
         println!("Execute SimulatedAnnealing");
         let start_time = Instant::now();
         let cities_len = self.cities.len();
+        let greedy_range = cities_len.max(20);
         let temp_list_len = 150;
         //p
         let population_size;
@@ -259,30 +312,33 @@ impl Algorithm for SimulatedAnnealing {
             population_size = 20;
         }
         //g
-        let generations = 10;
+        let generations = 1000;
         //m
         let markov_chain_len = cities_len;
         let pos = 0.375;
         self.distance_matrix = Self::create_distance_matrix(&self.cities);
 
-        let a_sol = self.create_solutions(population_size);
+        let mut a_sol = self.create_random_solutions(population_size);
+        println!("Finalizou asol");
         let mut tempreture_matrix =
-            self.create_temperature_lists_matrix(population_size, temp_list_len);
+            self.create_temperature_lists_matrix(population_size, temp_list_len, greedy_range);
+        println!("Finalizou tempreture_matrix");
         let mut a_city: Vec<u16> = vec![0; population_size];
         let a_mcl = self.create_mcl_list(pos, markov_chain_len, generations);
         let mut best = self.find_best_solution(&a_sol);
         let initial_best = best.clone();
+        println!("Finalizou setup");
         for g in 0..generations {
             for i in 0..population_size {
-                let mut current_solution = a_sol[i].clone();
-                let temperature = tempreture_matrix[i].pop().unwrap();
+                let temperature = tempreture_matrix[i].peek().unwrap();
+                // println!("temp {}", temperature);
                 let (mut k, mut c, mut s) = (0, 0, 0.0);
                 while k < a_mcl[g] {
                     a_city[i] = (a_city[i] + 1) % (cities_len as u16);
                     let solution_y = self
-                        .create_new_solution_by_heuristic_strategy(a_city[i], &current_solution);
+                        .create_new_solution_by_heuristic_strategy(a_city[i], &a_sol[i], &a_sol);
 
-                    let current_distance = current_solution.get_distance();
+                    let current_distance = a_sol[i].get_distance();
                     let y_distance = solution_y.get_distance();
                     let distance_diff = y_distance - current_distance;
                     let p;
@@ -294,19 +350,27 @@ impl Algorithm for SimulatedAnnealing {
                     let random = self.rng.random_range(0.0..1.0);
                     if random < p {
                         if distance_diff > 0.0 {
-                            s += distance_diff / random.ln();
+                            s += -distance_diff / random.ln();
                             c += 1;
                         } else if current_distance < best.get_distance() {
-                            best = current_solution.clone();
+                            best = a_sol[i].clone();
+                            println!("{} {}", &best.get_distance(), g);
                         }
-                        current_solution = solution_y.clone();
+                        a_sol[i] = solution_y.clone();
+                        // println!("k {} p {} g {}", k, i, g);
                     }
                     k += 1;
                 }
                 if c > 0 {
                     tempreture_matrix[i].pop();
                     tempreture_matrix[i].push(OrderedFloat(s / c as f64));
+                    if (s / c as f64) < 0.0 {
+                        println!("s {} c {}", s, c);
+                    }
                 }
+            }
+            if g % 50 == 0 {
+                println!("gen {}", g);
             }
         }
         ExecuteResponse::new(
