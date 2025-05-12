@@ -11,14 +11,17 @@ use models::{
     graph_metadata::GraphMetadata,
     uf::{UF, UFEnum},
 };
+use plotters::{
+    chart::ChartBuilder,
+    prelude::{BitMapBackend, Circle, IntoDrawingArea, PathElement},
+    style::{BLUE, Color, RED, WHITE},
+};
 use std::{
     error::Error,
     fs::{File, create_dir_all},
     iter::once,
     path::Path,
 };
-// update to just the used ones
-use plotters::prelude::*;
 
 #[derive(Parser)]
 #[command(name = "Optimizer")]
@@ -132,14 +135,6 @@ fn read_csv_cities(path: &str, uf: &UF) -> Vec<City> {
     cities
 }
 
-// fn retrieve_cities_for_uf(uf: &UFEnum, cities: &Vec<City>) -> Vec<City> {
-//     cities
-//         .iter()
-//         .filter(|city| city.get_uf().get_uf_enum() == uf)
-//         .cloned()
-//         .collect()
-// }
-
 fn main() {
     let args = Args::parse();
     let algorithm = args.algorithm.as_str();
@@ -147,10 +142,6 @@ fn main() {
     let plot = args.plot;
 
     let cities = read_csv_cities("src/assets/cities.csv", &uf);
-
-    // if *uf.get_uf_enum() != UFEnum::BRAZIL {
-    //     cities = retrieve_cities_for_uf(&uf.get_uf_enum(), &cities);
-    // }
 
     let cities_result = AlgorithmStrategy::execute_algorithm(algorithm, &cities);
 

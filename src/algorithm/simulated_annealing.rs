@@ -319,19 +319,15 @@ impl Algorithm for SimulatedAnnealing {
         self.distance_matrix = Self::create_distance_matrix(&self.cities);
 
         let mut a_sol = self.create_random_solutions(population_size);
-        println!("Finalizou asol");
         let mut tempreture_matrix =
             self.create_temperature_lists_matrix(population_size, temp_list_len, greedy_range);
-        println!("Finalizou tempreture_matrix");
         let mut a_city: Vec<u16> = vec![0; population_size];
         let a_mcl = self.create_mcl_list(pos, markov_chain_len, generations);
         let mut best = self.find_best_solution(&a_sol);
         let initial_best = best.clone();
-        println!("Finalizou setup");
         for g in 0..generations {
             for i in 0..population_size {
                 let temperature = tempreture_matrix[i].peek().unwrap();
-                // println!("temp {}", temperature);
                 let (mut k, mut c, mut s) = (0, 0, 0.0);
                 while k < a_mcl[g] {
                     a_city[i] = (a_city[i] + 1) % (cities_len as u16);
@@ -357,16 +353,12 @@ impl Algorithm for SimulatedAnnealing {
                             println!("{} {}", &best.get_distance(), g);
                         }
                         a_sol[i] = solution_y.clone();
-                        // println!("k {} p {} g {}", k, i, g);
                     }
                     k += 1;
                 }
                 if c > 0 {
                     tempreture_matrix[i].pop();
                     tempreture_matrix[i].push(OrderedFloat(s / c as f64));
-                    if (s / c as f64) < 0.0 {
-                        println!("s {} c {}", s, c);
-                    }
                 }
             }
             if g % 50 == 0 {

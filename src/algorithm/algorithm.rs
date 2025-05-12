@@ -143,7 +143,6 @@ pub trait Algorithm {
     }
 
     fn create_kd_tree(cities: Vec<City>) -> KdTree<f32, 2> {
-        // println!("{:?}", cities);
         let tree_entries: Vec<([f32; 2], u16)> = cities
             .iter()
             .map(|c| (c.get_coordinates().get_as_array(), c.get_id()))
@@ -152,7 +151,6 @@ pub trait Algorithm {
         let mut kd_tree: KdTree<f32, 2> = KdTree::new();
 
         for (coord, id) in tree_entries {
-            // println!("{}", id);
             kd_tree.add(&coord, id as u64);
         }
 
