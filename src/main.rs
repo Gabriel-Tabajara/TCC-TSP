@@ -1,3 +1,7 @@
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+#![allow(dead_code)]
+
 mod algorithm;
 mod models;
 
@@ -152,9 +156,9 @@ fn main() {
 
     if plot {
         let folder = format!(
-            "src/assets/{}/{}",
-            algorithm,
-            args.uf.as_str().to_uppercase()
+            "src/assets/results/{}/{}",
+            args.uf.as_str().to_uppercase(),
+            algorithm
         );
 
         let mut best_distance_in_file = 0.0;
@@ -171,9 +175,6 @@ fn main() {
             || (best_distance_in_file == *cities_result.get_distance())
                 && best_time_in_file > cities_result.get_total_time().as_secs_f64()
         {
-            let mut initial_path = cities_result.get_initial_path().clone();
-            initial_path.push(initial_path[0]);
-
             let mut final_path = cities_result.get_final_path().clone();
             final_path.push(final_path[0]);
 
@@ -185,13 +186,18 @@ fn main() {
             )
             .unwrap();
 
-            plot_state(
-                &cities,
-                &initial_path,
-                format!("{}/inicial.png", folder).as_str(),
-                &uf,
-            )
-            .unwrap();
+            let mut initial_path = cities_result.get_initial_path().clone();
+            if initial_path.len() != 0 {
+                initial_path.push(initial_path[0]);
+
+                plot_state(
+                    &cities,
+                    &initial_path,
+                    format!("{}/inicial.png", folder).as_str(),
+                    &uf,
+                )
+                .unwrap();
+            }
 
             let metadata = GraphMetadata::new(
                 final_path,
