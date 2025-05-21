@@ -1,3 +1,5 @@
+use kiddo::{KdTree, SquaredEuclidean};
+
 use crate::models::city::City;
 use std::time::Duration;
 
@@ -81,6 +83,21 @@ pub trait Algorithm {
         Self::calculate_distance_between_cities(&cities[id1], &cities[id2])
     }
 
+    fn find_best_n_neighbours_kd_tree(
+        kd_tree: &KdTree<f32, 2>,
+        city: &City,
+        n: usize,
+        filter: &Vec<&City>,
+    ) -> Vec<usize> {
+        let coordinates = city.get_coordinates().get_as_array();
+        let mut custom_kd_tree = kd_tree.clone();
+        for c in filter {
+            custom_kd_tree.remove(&c.get_coordinates().get_as_array(), c.get_id() as u64);
+        }
+        let n_nearest = custom_kd_tree.nearest_n::<SquaredEuclidean>(&coordinates, n);
+        n_nearest.iter().map(|c| c.item as usize).collect()
+    }
+
     fn find_best_neighbour(
         distance_matrix: &[f64],
         id_city: usize,
@@ -123,6 +140,21 @@ pub trait Algorithm {
         connections_tuple.sort_by(|a, b| a.1.partial_cmp(b.1).unwrap());
 
         connections_tuple.iter().take(n).map(|(i, _)| *i).collect()
+    }
+
+    fn create_kd_tree(cities: Vec<City>) -> KdTree<f32, 2> {
+        let tree_entries: Vec<([f32; 2], u16)> = cities
+            .iter()
+            .map(|c| (c.get_coordinates().get_as_array(), c.get_id()))
+            .collect();
+
+        let mut kd_tree: KdTree<f32, 2> = KdTree::new();
+
+        for (coord, id) in tree_entries {
+            kd_tree.add(&coord, id as u64);
+        }
+
+        kd_tree
     }
 
     fn create_distance_matrix(cities: &Vec<City>) -> Vec<f64> {

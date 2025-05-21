@@ -19,4 +19,8 @@ impl Coordinates {
     pub fn get_longitude(&self) -> f32 {
         self.longitude
     }
+
+    pub fn get_as_array(&self) -> [f32; 2] {
+        [self.latitude, self.longitude]
+    }
 }
