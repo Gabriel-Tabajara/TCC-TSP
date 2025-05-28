@@ -8,13 +8,13 @@ Paraná	            PR	399
 Santa Catarina	    SC	295
 Goiás	            GO	246
 Piauí	            PI	224
-Maranhão	        MA	217
 Paraíba	            PB	223
-Ceará	            CE	184
+Maranhão	        MA	217
 Pernambuco	        PE	185
+Ceará	            CE	184
 Rio Grande do Norte	RN	167
 Pará	            PA	144
-Mato Grosso	        MT	142
+Mato Grosso	        MT	141
 Tocantins	        TO	139
 Alagoas	            AL	102
 Rio de Janeiro	    RJ	92
