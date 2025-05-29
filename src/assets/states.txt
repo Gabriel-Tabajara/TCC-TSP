@@ -1,4 +1,28 @@
-// This file contains the number of municipalities in each Brazilian state.
+Selected states:
+
+Run 10 times each unless for Brazil, which will be run once.
+
+Final comparation:
+
+Brazil              BR  5570
+Minas Gerais	    MG	853
+São Paulo	        SP	645
+Rio Grande do Sul	RS	497
+Paraná	            PR	399
+Santa Catarina	    SC	295
+Pernambuco	        PE	185
+Alagoas	            AL	102
+Amazonas	        AM	62
+Amapá	            AP	16
+
+Variations comparation:
+
+Minas Gerais	    MG	853
+São Paulo	        SP	645
+Paraná	            PR	399
+Santa Catarina	    SC	295
+Amazonas	        AM	62
+
 
 Minas Gerais	    MG	853
 São Paulo	        SP	645

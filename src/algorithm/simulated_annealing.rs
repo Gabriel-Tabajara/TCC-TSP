@@ -350,7 +350,7 @@ impl Algorithm for SimulatedAnnealing {
                             c += 1;
                         } else if current_distance < best.get_distance() {
                             best = a_sol[i].clone();
-                            println!("{} {}", &best.get_distance(), g);
+                            // println!("{} {}", &best.get_distance(), g);
                         }
                         a_sol[i] = solution_y.clone();
                     }
@@ -361,9 +361,9 @@ impl Algorithm for SimulatedAnnealing {
                     tempreture_matrix[i].push(OrderedFloat(s / c as f64));
                 }
             }
-            if g % 50 == 0 {
-                println!("gen {}", g);
-            }
+            // if g % 50 == 0 {
+            //     println!("gen {}", g);
+            // }
         }
         ExecuteResponse::new(
             initial_best.get_path().clone(),
