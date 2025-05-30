@@ -147,9 +147,9 @@ fn main() {
 
     if plot {
         let folder = format!(
-            "src/assets/{}/{}",
-            algorithm,
-            args.uf.as_str().to_uppercase()
+            "src/assets/results/{}/{}",
+            args.uf.as_str().to_uppercase(),
+            algorithm
         );
 
         let mut best_distance_in_file = 0.0;

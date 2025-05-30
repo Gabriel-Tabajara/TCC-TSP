@@ -1,0 +1,14 @@
+Log Type: generic
+Mean Time: 156.85
+Mean Distance: 40.29
+Best Result: 40.25
+Worst Result: 40.35
+Time of Best Distance: 152.24
+
+Log Type: greedy
+Mean Time: 184.87
+Mean Distance: 40.29
+Best Result: 40.25
+Worst Result: 40.34
+Time of Best Distance: 186.47
+

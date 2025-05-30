@@ -1,12 +1,12 @@
 #!/bin/bash
 
-TIMES=15
+TIMES=10
 UFs=(
-    "rr"
+    # "rr"
     # "ap"
     # "ac"
     # "ro"
-    # "am"
+    "am"
     # "se"
     # "es"
     # "ms"
@@ -22,19 +22,40 @@ UFs=(
     # "ma"
     # "pi"
     # "go"
-    # "sc"
-    # "pr"
+    "sc"
+    "pr"
     # "ba"
     # "rs"
-    # "sp"
-    # "mg"
+    "sp"
+    "mg"
 )
+
+ALG="SA"
+VARIANT="greedy" # ou greedy
 
 for uf in "${UFs[@]}"
 do
     for ((i=1; i<=TIMES; i++))
     do
-        echo "Running test $i for UF: $uf" | tee -a output.log
-        RUSTFLAGS="-Awarnings" cargo run -q -- -a SA -u "$uf" -p | tee -a output.log
+        DIR="src/assets/outputs/$ALG/$uf"
+        FILE="$DIR/${i}_${VARIANT}.txt"
+        
+        mkdir -p "$DIR"  # Cria o diretório se não existir
+    done
+done
+
+for uf in "${UFs[@]}"
+do
+    for ((i=1; i<=TIMES; i++))
+    do
+        DIR="src/assets/outputs/$ALG/$uf"
+        FILE="$DIR/${i}_${VARIANT}.txt"
+        
+        mkdir -p "$DIR"  # Cria o diretório se não existir
+        
+        date > "$FILE"
+        echo "Running test $i for UF: $uf with algorithm: $ALG" | tee -a "$FILE"
+        RUSTFLAGS="-Awarnings" cargo run -q -- -a "$ALG" -u "$uf" -p | tee -a "$FILE"
+        date >> "$FILE"
     done
 done

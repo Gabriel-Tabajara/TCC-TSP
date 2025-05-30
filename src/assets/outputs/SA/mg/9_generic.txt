@@ -1,0 +1,6 @@
+Thu May 29 17:45:27 -03 2025
+Running test 9 for UF: mg with algorithm: SA
+Execute SimulatedAnnealing
+157.81238797595486
+1249.184687361
+Thu May 29 18:06:16 -03 2025

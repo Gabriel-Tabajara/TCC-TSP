@@ -1,0 +1,59 @@
+State: sp
+  Log Type: generic
+    Mean Time: 701.49
+    Best Result: 95.23
+    Worst Result: 95.55
+    Time of Best Distance: 684.30
+  Log Type: greedy
+    Mean Time: 900.60
+    Best Result: 95.22
+    Worst Result: 95.49
+    Time of Best Distance: 948.44
+    
+State: mg
+  Log Type: generic
+    Mean Time: 1251.35
+    Best Result: 157.76
+    Worst Result: 158.07
+    Time of Best Distance: 1194.55
+  Log Type: greedy
+    Mean Time: 1242.54
+    Best Result: 157.82
+    Worst Result: 158.25
+    Time of Best Distance: 1219.58
+
+State: pr
+  Log Type: generic
+    Mean Time: 274.10
+    Best Result: 66.77
+    Worst Result: 66.86
+    Time of Best Distance: 270.63
+  Log Type: greedy
+    Mean Time: 337.75
+    Best Result: 66.78
+    Worst Result: 66.87
+    Time of Best Distance: 333.60
+
+State: sc
+  Log Type: generic
+    Mean Time: 156.85
+    Best Result: 40.25
+    Worst Result: 40.35
+    Time of Best Distance: 152.24
+  Log Type: greedy
+    Mean Time: 184.87
+    Best Result: 40.25
+    Worst Result: 40.34
+    Time of Best Distance: 186.47
+
+State: am
+  Log Type: generic
+    Mean Time: 10.31
+    Best Result: 63.14
+    Worst Result: 63.57
+    Time of Best Distance: 10.78
+  Log Type: greedy
+    Mean Time: 11.68
+    Best Result: 63.14
+    Worst Result: 63.14
+    Time of Best Distance: 12.54

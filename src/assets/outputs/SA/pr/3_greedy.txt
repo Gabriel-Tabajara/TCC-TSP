@@ -1,0 +1,6 @@
+Thu May 29 20:55:47 -03 2025
+Running test 3 for UF: pr with algorithm: SA
+Execute SimulatedAnnealing
+66.82830590581968
+333.02819757
+Thu May 29 21:01:20 -03 2025
