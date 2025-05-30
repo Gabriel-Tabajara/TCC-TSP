@@ -15,13 +15,13 @@ def analyze_logs(base_path):
         state_path = os.path.join(base_path, state)
         if not os.path.isdir(state_path):
             continue
-
+        if state == 'brazil': continue
         results[state] = {}
 
         for log_type in ['generic', 'greedy']:
             distances = []
             times = []
-
+            
             for i in range(1, 11):
                 file_name = f"{i}_{log_type}.txt"
                 file_path = os.path.join(state_path, file_name)
@@ -55,19 +55,21 @@ def save_analytics(base_path, analytics):
 
         with open(output_file, 'w') as file:
             for log_type, data in log_types.items():
+                if state == 'brazil': continue
                 file.write(f"Log Type: {log_type}\n")
                 file.write(f"Mean Time: {data['mean_time']:.2f}\n")
                 file.write(f"Mean Distance: {data['mean_distance']:.2f}\n")
-                file.write(f"Best Result: {data['best_result']:.2f}\n")
-                file.write(f"Worst Result: {data['worst_result']:.2f}\n")
+                file.write(f"Best Result: {data['best_result']}\n")
+                file.write(f"Worst Result: {data['worst_result']}\n")
                 file.write(f"Time of Best Distance: {data['time_of_best_distance']:.2f}\n\n")
                 print(f"State: {state}")
                 print(f"  Log Type: {log_type}")
                 print(f"    Mean Time: {data['mean_time']:.2f}")
                 print(f"    Mean Distance: {data['mean_distance']:.2f}")
-                print(f"    Best Result: {data['best_result']:.2f}")
-                print(f"    Worst Result: {data['worst_result']:.2f}")
+                print(f"    Best Result: {data['best_result']}")
+                print(f"    Worst Result: {data['worst_result']}")
                 print(f"    Time of Best Distance: {data['time_of_best_distance']:.2f}")
+                print()
 
 def main():
     base_path = 'src/assets/outputs/SA'

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-TIMES=10
+TIMES=2
 UFs=(
     # "rr"
-    "ap"
+    # "ap"
     # "ac"
     # "ro"
     # "am"
@@ -11,12 +11,12 @@ UFs=(
     # "es"
     # "ms"
     # "rj"
-    "al"
+    # "al"
     # "to"
     # "mt"
     # "pa"
     # "rn"
-    "pe"
+    # "pe"
     # "ce"
     # "pb"
     # "ma"
@@ -25,13 +25,14 @@ UFs=(
     # "sc"
     # "pr"
     # "ba"
-    "rs"
+    # "rs"
     # "sp"
     # "mg"
+    "brazil"
 )
 
 ALG="SA"
-VARIANT="greedy" # ou greedy
+VARIANT="generic" # ou greedy
 
 for uf in "${UFs[@]}"
 do
