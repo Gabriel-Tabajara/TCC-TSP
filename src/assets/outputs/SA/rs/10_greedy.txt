@@ -1,0 +1,6 @@
+Fri May 30 11:06:57 -03 2025
+Running test 10 for UF: rs with algorithm: SA
+Execute SimulatedAnnealing
+82.8877734048518
+412.479547289
+Fri May 30 11:13:50 -03 2025

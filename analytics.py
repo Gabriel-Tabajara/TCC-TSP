@@ -61,6 +61,13 @@ def save_analytics(base_path, analytics):
                 file.write(f"Best Result: {data['best_result']:.2f}\n")
                 file.write(f"Worst Result: {data['worst_result']:.2f}\n")
                 file.write(f"Time of Best Distance: {data['time_of_best_distance']:.2f}\n\n")
+                print(f"State: {state}")
+                print(f"  Log Type: {log_type}")
+                print(f"    Mean Time: {data['mean_time']:.2f}")
+                print(f"    Mean Distance: {data['mean_distance']:.2f}")
+                print(f"    Best Result: {data['best_result']:.2f}")
+                print(f"    Worst Result: {data['worst_result']:.2f}")
+                print(f"    Time of Best Distance: {data['time_of_best_distance']:.2f}")
 
 def main():
     base_path = 'src/assets/outputs/SA'

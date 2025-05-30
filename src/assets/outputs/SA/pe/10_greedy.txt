@@ -1,0 +1,6 @@
+Fri May 30 10:03:18 -03 2025
+Running test 10 for UF: pe with algorithm: SA
+Execute SimulatedAnnealing
+39.836071075856765
+62.732221844
+Fri May 30 10:04:21 -03 2025

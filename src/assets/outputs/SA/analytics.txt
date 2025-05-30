@@ -1,35 +1,65 @@
 State: sp
   Log Type: generic
     Mean Time: 701.49
+    Mean Distance: 95.38
     Best Result: 95.23
     Worst Result: 95.55
     Time of Best Distance: 684.30
   Log Type: greedy
     Mean Time: 900.60
+    Mean Distance: 95.35
     Best Result: 95.22
     Worst Result: 95.49
     Time of Best Distance: 948.44
-    
+
 State: mg
   Log Type: generic
     Mean Time: 1251.35
+    Mean Distance: 157.89
     Best Result: 157.76
     Worst Result: 158.07
     Time of Best Distance: 1194.55
   Log Type: greedy
     Mean Time: 1242.54
+    Mean Distance: 157.99
     Best Result: 157.82
     Worst Result: 158.25
     Time of Best Distance: 1219.58
 
+State: al
+  Log Type: greedy
+    Mean Time: 23.69
+    Mean Distance: 13.23
+    Best Result: 13.22
+    Worst Result: 13.24
+    Time of Best Distance: 22.62
+
+State: ap
+  Log Type: greedy
+    Mean Time: 1.48
+    Mean Distance: 11.71
+    Best Result: 11.71
+    Worst Result: 11.71
+    Time of Best Distance: 1.48
+
+State: rs
+  Log Type: greedy
+    Mean Time: 416.63
+    Mean Distance: 82.88
+    Best Result: 82.84
+    Worst Result: 82.94
+    Time of Best Distance: 431.60
+
 State: pr
   Log Type: generic
     Mean Time: 274.10
+    Mean Distance: 66.81
     Best Result: 66.77
     Worst Result: 66.86
     Time of Best Distance: 270.63
   Log Type: greedy
     Mean Time: 337.75
+    Mean Distance: 66.82
     Best Result: 66.78
     Worst Result: 66.87
     Time of Best Distance: 333.60
@@ -37,23 +67,35 @@ State: pr
 State: sc
   Log Type: generic
     Mean Time: 156.85
+    Mean Distance: 40.29
     Best Result: 40.25
     Worst Result: 40.35
     Time of Best Distance: 152.24
   Log Type: greedy
     Mean Time: 184.87
+    Mean Distance: 40.29
     Best Result: 40.25
     Worst Result: 40.34
     Time of Best Distance: 186.47
 
+State: pe
+  Log Type: greedy
+    Mean Time: 66.42
+    Mean Distance: 39.83
+    Best Result: 39.82
+    Worst Result: 39.84
+    Time of Best Distance: 70.41
+
 State: am
   Log Type: generic
     Mean Time: 10.31
+    Mean Distance: 63.19
     Best Result: 63.14
     Worst Result: 63.57
     Time of Best Distance: 10.78
   Log Type: greedy
     Mean Time: 11.68
+    Mean Distance: 63.14
     Best Result: 63.14
     Worst Result: 63.14
     Time of Best Distance: 12.54

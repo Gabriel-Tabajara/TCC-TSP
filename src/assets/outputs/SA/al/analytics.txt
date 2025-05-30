@@ -1,0 +1,7 @@
+Log Type: greedy
+Mean Time: 23.69
+Mean Distance: 13.23
+Best Result: 13.22
+Worst Result: 13.24
+Time of Best Distance: 22.62
+
