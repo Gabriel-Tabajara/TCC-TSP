@@ -27,7 +27,7 @@ State: mg
     Time of Best Distance: 1219.58
 
 State: al
-  Log Type: greedy
+  Log Type: generic
     Mean Time: 23.69
     Mean Distance: 13.23
     Best Result: 13.22
@@ -35,7 +35,7 @@ State: al
     Time of Best Distance: 22.62
 
 State: ap
-  Log Type: greedy
+  Log Type: generic
     Mean Time: 1.48
     Mean Distance: 11.71
     Best Result: 11.71
@@ -43,7 +43,7 @@ State: ap
     Time of Best Distance: 1.48
 
 State: rs
-  Log Type: greedy
+  Log Type: generic
     Mean Time: 416.63
     Mean Distance: 82.88
     Best Result: 82.84
@@ -79,7 +79,7 @@ State: sc
     Time of Best Distance: 186.47
 
 State: pe
-  Log Type: greedy
+  Log Type: generic
     Mean Time: 66.42
     Mean Distance: 39.83
     Best Result: 39.82

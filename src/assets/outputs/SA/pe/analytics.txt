@@ -1,4 +1,4 @@
-Log Type: greedy
+Log Type: generic
 Mean Time: 66.42
 Mean Distance: 39.8282657230738
 Best Result: 39.81647884826708
