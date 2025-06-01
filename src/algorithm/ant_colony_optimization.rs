@@ -21,6 +21,7 @@ pub struct AntColonyOptimization {
     num_ants: usize,      // number of ants to simulate
     best_path: Vec<u16>,  // best path found
     best_cost: f64,       // cost of the best path found
+    candidate_lists: Vec<Vec<usize>>,
 }
 
 impl AntColonyOptimization {
@@ -48,6 +49,7 @@ impl AntColonyOptimization {
             num_ants: ants,
             best_path: vec![],
             best_cost: f64::MAX,
+            candidate_lists: Self::build_candidate_lists(cities),
         }
     }
     pub fn update_rho(&mut self, iteration: usize) {
@@ -70,16 +72,15 @@ impl AntColonyOptimization {
         q: f64,
     ) {
         let n = self.cities.len();
-        // Evaporação global
+        // global pheromone evaporation
         for tau in pheromone_matrix.iter_mut() {
             *tau *= 1.0 - self.vaporation_rate;
         }
 
-        // Ordena os caminhos por custo (menor custo = melhor)
         let mut ranked_paths = paths.clone();
         ranked_paths.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
 
-        // Top lambda*m formigas atualizam o feromônio (ASrank)
+        // Top lambda*m ants updates pheromone (ASrank)
         let lambda = (self.num_ants as f64 * 0.2).ceil() as usize;
 
         // if self.s % 10 == 0 {
@@ -112,6 +113,14 @@ impl AntColonyOptimization {
         pheromone_matrix
     }
 
+    pub fn use_candidate_lists(&self, current: usize) -> &Vec<usize> {
+        &self.candidate_lists[current]
+    }
+
+    pub fn use_all_cities(&self) -> Vec<usize> {
+        (0..self.cities.len()).collect()
+    }
+
     pub fn chose_next_city(
         &mut self,
         current: usize,
@@ -123,16 +132,37 @@ impl AntColonyOptimization {
         let mut probabilities = Vec::new();
         let mut sum = 0.0;
 
-        for i in 0..n {
-            if !visited.contains(&(i as u16)) {
-                let tau = pheromone_matrix[current * n + i].powf(self.alpha);
-                let eta = (1.0 / distance_matrix[current * n + i]).powf(self.beta);
-
-                let probability = tau * eta;
-                probabilities.push((i, probability));
-                sum += probability;
-            }
+        // use candidate lists
+        let candidates = &self.candidate_lists[current];
+        let mut candidates: Vec<usize> = candidates
+            .iter()
+            .copied()
+            .filter(|i| !visited.contains(&(*i as u16)))
+            .collect();
+        if candidates.is_empty() {
+            candidates = (0..n)
+                .filter(|i| !visited.contains(&(*i as u16)) && *i != current)
+                .collect();
         }
+
+        for i in candidates {
+            let tau = pheromone_matrix[current * n + i].powf(self.alpha);
+            let eta = (1.0 / distance_matrix[current * n + i]).powf(self.beta);
+            let probability = tau * eta;
+            probabilities.push((i, probability));
+            sum += probability;
+        }
+
+        // // use all cities
+        // for i in 0..n {
+        //     if !visited.contains(&(i as u16)) {
+        //         let tau = pheromone_matrix[current * n + i].powf(self.alpha);
+        //         let eta = (1.0 / distance_matrix[current * n + i]).powf(self.beta);
+        //         let probability = tau * eta;
+        //         probabilities.push((i, probability));
+        //         sum += probability;
+        //     }
+        // }
 
         // rolette wheel selection
         let mut r = self.rng.random_range(0.0..1.0) * sum;
@@ -144,6 +174,34 @@ impl AntColonyOptimization {
         }
 
         probabilities.last().unwrap().0
+    }
+
+    fn compute_entropy(&self, pheromone_matrix: &Vec<f64>) -> f64 {
+        let total: f64 = pheromone_matrix.iter().sum();
+        pheromone_matrix
+            .iter()
+            .filter(|&&p| p > 0.0)
+            .map(|&p| {
+                let prob = p / total;
+                -prob * prob.log2()
+            })
+            .sum()
+    }
+
+    fn update_beta_by_entropy(&mut self, pheromone_matrix: &Vec<f64>) {
+        let entropy = self.compute_entropy(pheromone_matrix);
+        let max_entropy = (self.cities.len() * (self.cities.len() - 1) / 2) as f64;
+        let e_prime = 1.0 - (entropy / max_entropy);
+
+        self.beta = if e_prime < 0.3 {
+            5.0
+        } else if e_prime < 0.5 {
+            4.0
+        } else if e_prime < 0.7 {
+            3.0
+        } else {
+            2.0
+        };
     }
 
     pub fn run(
@@ -233,6 +291,29 @@ impl AntColonyOptimization {
         }
     }
 
+    fn build_candidate_lists(cities: &Vec<City>) -> Vec<Vec<usize>> {
+        let n: usize = cities.len();
+        let mut lists = vec![vec![]; n];
+
+        for i in 0..n {
+            let mut distances: Vec<(usize, f64)> = (0..n)
+                .filter(|&j| i != j)
+                .map(|j| {
+                    (
+                        j,
+                        Self::calculate_distance_between_cities(&cities[i], &cities[j]),
+                    )
+                })
+                .collect();
+
+            distances.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+            let list_size = (n as f64 / 4.0).ceil() as usize;
+            lists[i] = distances.iter().take(list_size).map(|&(j, _)| j).collect();
+        }
+
+        lists
+    }
+
     pub fn start(&mut self) -> (Vec<u16>, f64) {
         let size = self.cities.len();
         let distance_matrix = Self::create_distance_matrix(&self.cities);
@@ -259,7 +340,8 @@ impl AntColonyOptimization {
                 }
             }
 
-            self.update_alpha_beta(iteration, self.stall_limit);
+            self.update_alpha_beta(iteration, self.stall_limit); // AACO-LST
+            // self.update_beta_by_entropy(&pheromone_matrix);
 
             if improved {
                 iterations_without_improvement = 0;
