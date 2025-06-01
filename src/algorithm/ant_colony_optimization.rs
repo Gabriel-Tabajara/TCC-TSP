@@ -1,6 +1,6 @@
-use std::{process::exit, time::Instant};
-
 use rand::{Rng, rng, rngs::ThreadRng};
+use std::cmp;
+use std::{process::exit, time::Instant};
 
 use super::algorithm::{Algorithm, ExecuteResponse};
 use crate::models::city::City;
@@ -8,50 +8,84 @@ use std::collections::HashSet;
 
 pub struct AntColonyOptimization {
     cities: Vec<City>,
-    alpha: f64,
-    beta: f64,
-    vaporation_rate: f64,
-    rng: ThreadRng,
-    num_ants: usize,
-    best_path: Vec<u16>,
-    best_cost: f64,
-    stall_limit: usize,
+    alpha: f64,           // importance of pheromone
+    beta: f64,            // importance of heuristic
+    vaporation_rate: f64, // rate of pheromone evaporation
+    rho0: f64,            // initial pheromone vaporation rate
+    gamma: f64,           // rate of pheromone vaporation reduction
+    omega: f64,           // % of iterations needed to start reducing pheromone vaporation rate
+    stall_limit: usize,   // max number of iterations before stopping
+    s: usize,             // number of iterations without improvement
+    s_threshold: usize,   // nº of consecutive iterations without reducing pheromone vaporation rate
+    rng: ThreadRng,       // random number generator
+    num_ants: usize,      // number of ants to simulate
+    best_path: Vec<u16>,  // best path found
+    best_cost: f64,       // cost of the best path found
 }
 
 impl AntColonyOptimization {
     pub fn new(cities: &Vec<City>) -> Self {
+        print!(
+            "AntColonyOptimization::new() called with {} cities, using {} ants",
+            cities.len(),
+            cmp::min(cities.len(), 100)
+        );
         AntColonyOptimization {
             cities: cities.clone(),
             alpha: 1.0,
             beta: 1.0,
             vaporation_rate: 0.75,
+            rho0: 0.3,
+            gamma: 0.8,
+            omega: 0.7,
+            stall_limit: 250,
+            s_threshold: 30,
+            s: 0,
             rng: rng(),
-            num_ants: 10,
+            num_ants: cmp::min(cities.len(), 100),
             best_path: vec![],
             best_cost: f64::MAX,
-            stall_limit: 1000,
+        }
+    }
+    pub fn update_rho(&mut self, iteration: usize) {
+        if iteration < (self.omega * self.stall_limit as f64) as usize {
+            self.vaporation_rate = self.rho0;
+        } else if self.s > self.s_threshold {
+            self.vaporation_rate *= self.gamma;
+            if self.vaporation_rate < 0.01 {
+                self.vaporation_rate = 0.01;
+            }
         }
     }
 
-    pub fn calc_vaporation() {}
-
+    // Atualização de feromônio com ASrank (formigas ordenadas por qualidade de solução)
     pub fn update_pheromone(
         &mut self,
         pheromone_matrix: &mut Vec<f64>,
+        distance_matrix: &Vec<f64>,
         paths: &Vec<(Vec<u16>, f64)>,
         q: f64,
     ) {
         let n = self.cities.len();
-        // Vaporation
+        // Evaporação global
         for tau in pheromone_matrix.iter_mut() {
             *tau *= 1.0 - self.vaporation_rate;
         }
 
-        for (path, cost) in paths {
+        // Ordena os caminhos por custo (menor custo = melhor)
+        let mut ranked_paths = paths.clone();
+        ranked_paths.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+
+        // Top lambda*m formigas atualizam o feromônio (ASrank)
+        let lambda = (self.num_ants as f64 * 0.2).ceil() as usize;
+        self.optimize_best_paths(&mut ranked_paths, distance_matrix, lambda, n);
+
+        for (rank, (path, cost)) in ranked_paths.iter().take(lambda).enumerate() {
+            let weight = (lambda - rank) as f64; // rank 0 = mais peso
             for w in path.windows(2) {
                 let i = w[0] as usize;
                 let j = w[1] as usize;
-                let delta = q / cost;
+                let delta = weight * q / cost;
                 pheromone_matrix[i * n + j] += delta;
                 pheromone_matrix[j * n + i] += delta;
             }
@@ -113,7 +147,6 @@ impl AntColonyOptimization {
         distance_matrix: &Vec<f64>,
         pheromone_matrix: &Vec<f64>,
     ) {
-        // get random number between 0..self.cities.len
         let n = self.cities.len();
         let start_city = self.rng.random_range(0..n - 1) as u16;
         path.push(start_city);
@@ -133,12 +166,68 @@ impl AntColonyOptimization {
         // path.push(start_city);
     }
 
+    fn update_alpha_beta(&mut self, iter: usize, max_iter: usize) {
+        let r1: f64 = self.rng.random();
+        let r2: f64 = self.rng.random();
+        let t = iter as f64;
+        let t_max = max_iter as f64;
+
+        // Valores fixos como no artigo
+        let a = 2.0;
+        let b = 3.0;
+
+        self.alpha = (r1 * t * std::f64::consts::PI / (2.0 * t_max)).cos() + a;
+        self.beta = (r2 * t * std::f64::consts::PI / (2.0 * t_max)).sin() + b;
+    }
+
+    fn two_opt(&mut self, path: &mut Vec<u16>, distance_matrix: &Vec<f64>, n: usize) -> f64 {
+        let mut improved = true;
+        let mut total_cost = Self::calculate_path_distance(&path, &distance_matrix);
+
+        while improved {
+            improved = false;
+            for i in 1..path.len() - 2 {
+                for j in i + 1..path.len() - 1 {
+                    let a = path[i - 1] as usize;
+                    let b = path[i] as usize;
+                    let c = path[j] as usize;
+                    let d = path[j + 1] as usize;
+
+                    let current = distance_matrix[a * n + b] + distance_matrix[c * n + d];
+                    let new = distance_matrix[a * n + c] + distance_matrix[b * n + d];
+
+                    if new < current {
+                        path[i..=j].reverse();
+                        total_cost = total_cost - current + new;
+                        improved = true;
+                    }
+                }
+            }
+        }
+
+        total_cost
+    }
+
+    pub fn optimize_best_paths(
+        &mut self,
+        paths: &mut Vec<(Vec<u16>, f64)>,
+        distance_matrix: &Vec<f64>,
+        top_k: usize,
+        n: usize,
+    ) {
+        paths.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+
+        for i in 0..top_k.min(paths.len()) {
+            let (ref mut path, ref mut cost) = paths[i];
+            *cost = self.two_opt(path, distance_matrix, n);
+        }
+    }
+
     pub fn start(&mut self) -> (Vec<u16>, f64) {
         let size = self.cities.len();
         let distance_matrix = Self::create_distance_matrix(&self.cities);
         let mut pheromone_matrix = self.create_pheromone_matrix(size);
 
-        let stall_limit = 1000;
         let mut iterations_without_improvement = 0;
         let mut iteration = 0;
         loop {
@@ -150,24 +239,24 @@ impl AntColonyOptimization {
                 let mut visited = HashSet::new();
 
                 self.run(&mut path, &mut visited, &distance_matrix, &pheromone_matrix);
-
-                // println!("Path: {:?}", path);
                 let cost = Self::calculate_path_distance(&path, &distance_matrix);
-
                 paths.push((path.clone(), cost));
 
                 if cost < self.best_cost {
-                    // println!("NEW BEST PATH (it {}): {:.4}", iteration, cost);
                     self.best_cost = cost;
                     self.best_path = path.clone();
                     improved = true;
                 }
             }
 
+            self.update_alpha_beta(iteration, self.stall_limit);
+
             if improved {
                 iterations_without_improvement = 0;
+                self.s = 0;
             } else {
                 iterations_without_improvement += 1;
+                self.s += 1;
             }
 
             if iterations_without_improvement >= self.stall_limit {
@@ -178,19 +267,21 @@ impl AntColonyOptimization {
                 break;
             }
 
-            self.update_pheromone(&mut pheromone_matrix, &paths, 10.0);
+            self.update_rho(iteration);
+            self.update_pheromone(&mut pheromone_matrix, &distance_matrix, &mut paths, 10.0);
 
             if iteration % 10 == 0 {
                 println!("Iteration {}: Best Cost = {:.4}", iteration, self.best_cost);
             }
             iteration += 1;
         }
+
         println!(
             "Final best path: {:?} | cost = {:.4}",
             self.best_path, self.best_cost
         );
 
-        return (self.best_path.clone(), self.best_cost);
+        (self.best_path.clone(), self.best_cost)
     }
 }
 
