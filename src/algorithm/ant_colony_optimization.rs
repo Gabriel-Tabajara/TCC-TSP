@@ -25,10 +25,13 @@ pub struct AntColonyOptimization {
 
 impl AntColonyOptimization {
     pub fn new(cities: &Vec<City>) -> Self {
+        let min_ants = 20;
+        let max_ants = 100;
+        let ants = cmp::max(min_ants, cmp::min(cities.len(), max_ants));
         print!(
             "AntColonyOptimization::new() called with {} cities, using {} ants",
             cities.len(),
-            cmp::min(cities.len(), 100)
+            ants
         );
         AntColonyOptimization {
             cities: cities.clone(),
@@ -42,7 +45,7 @@ impl AntColonyOptimization {
             s_threshold: 30,
             s: 0,
             rng: rng(),
-            num_ants: cmp::min(cities.len(), 100),
+            num_ants: ants,
             best_path: vec![],
             best_cost: f64::MAX,
         }
@@ -78,7 +81,10 @@ impl AntColonyOptimization {
 
         // Top lambda*m formigas atualizam o feromônio (ASrank)
         let lambda = (self.num_ants as f64 * 0.2).ceil() as usize;
+
+        // if self.s % 10 == 0 {
         self.optimize_best_paths(&mut ranked_paths, distance_matrix, lambda, n);
+        // }
 
         for (rank, (path, cost)) in ranked_paths.iter().take(lambda).enumerate() {
             let weight = (lambda - rank) as f64; // rank 0 = mais peso
@@ -172,12 +178,16 @@ impl AntColonyOptimization {
         let t = iter as f64;
         let t_max = max_iter as f64;
 
-        // Valores fixos como no artigo
-        let a = 2.0;
-        let b = 3.0;
+        // Fixed values for sine and cosine functions
+        let a = 1.5;
+        let b = 2.5;
 
-        self.alpha = (r1 * t * std::f64::consts::PI / (2.0 * t_max)).cos() + a;
-        self.beta = (r2 * t * std::f64::consts::PI / (2.0 * t_max)).sin() + b;
+        // Amplitude for sine and cosine functions
+        let alpha_amplitude = 1.0;
+        let beta_amplitude = 1.5;
+
+        self.alpha = alpha_amplitude * (r1 * t * std::f64::consts::PI / (2.0 * t_max)).cos() + a;
+        self.beta = beta_amplitude * (r2 * t * std::f64::consts::PI / (2.0 * t_max)).sin() + b;
     }
 
     fn two_opt(&mut self, path: &mut Vec<u16>, distance_matrix: &Vec<f64>, n: usize) -> f64 {
@@ -270,9 +280,9 @@ impl AntColonyOptimization {
             self.update_rho(iteration);
             self.update_pheromone(&mut pheromone_matrix, &distance_matrix, &mut paths, 10.0);
 
-            if iteration % 10 == 0 {
-                println!("Iteration {}: Best Cost = {:.4}", iteration, self.best_cost);
-            }
+            // if iteration % 5 == 0 {
+            println!("Iteration {}: Best Cost = {:.4}", iteration, self.best_cost);
+            // }
             iteration += 1;
         }
 
