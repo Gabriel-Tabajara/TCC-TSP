@@ -1,0 +1,28 @@
+Log Type: cycle
+Mean Time: 253.74
+Mean Distance: 101.37780276425349
+Best Result: 100.2874142384111
+Worst Result: 102.67496386000687
+Time of Best Distance: 267.34
+
+Log Type: order
+Mean Time: 2092.46
+Mean Distance: 101.4256260996344
+Best Result: 100.79864349651463
+Worst Result: 102.09173752695773
+Time of Best Distance: 1690.72
+
+Log Type: position
+Mean Time: 5348.44
+Mean Distance: 100.76108938529423
+Best Result: 99.85976507163583
+Worst Result: 101.82429249429723
+Time of Best Distance: 6163.85
+
+Log Type: mapped
+Mean Time: 4818.73
+Mean Distance: 101.0930157238303
+Best Result: 100.03218366947277
+Worst Result: 102.46225989638143
+Time of Best Distance: 6071.80
+

@@ -1,0 +1,7 @@
+Path: [7, 49, 51, 31, 33, 23, 39, 59, 0, 57, 32, 16, 58, 50, 1, 52, 55, 9, 5, 26, 24, 22, 21, 29, 12, 46, 34, 15, 25, 56, 38, 4, 44, 13, 42, 6, 28, 61, 40, 11, 8, 45, 41, 60, 53, 30, 54, 47, 48, 18, 37, 27, 17, 36, 35, 43, 14, 2, 10, 3, 20, 19, 7]
+Distance: 63.14088611964192
+Total Time: 5.768445118
+Population Size: 100
+Generations: 417738
+Crossover: order_based_crossover
+Mutations: {"insertion_mutation", "greedy_insertion_mutation", "swap_mutation", "simple_inversion_mutation", "", "inversion_mutation", "displacement_mutation", "greedy_sub_tour_mutation"}

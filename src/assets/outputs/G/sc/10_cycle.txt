@@ -1,0 +1,6 @@
+Sun Jun  1 01:04:40 -03 2025
+Running test 10 for UF: sc with algorithm: G
+Execute Genetic
+42.70548871390001
+41.775403914
+Sun Jun  1 01:05:22 -03 2025
