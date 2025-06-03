@@ -19,3 +19,17 @@ Best Result: 167.38973408983827
 Worst Result: 167.38973408983827
 Time of Best Distance: 12774.74
 
+Log Type: order_opt
+Mean Time: 1265.44
+Mean Distance: 166.93461718545436
+Best Result: 165.10909401083765
+Worst Result: 170.2583094553576
+Time of Best Distance: 1274.46
+
+Log Type: position_opt
+Mean Time: 3160.43
+Mean Distance: 168.29303314619807
+Best Result: 166.666741385359
+Worst Result: 171.57523754518343
+Time of Best Distance: 3011.46
+
