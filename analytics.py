@@ -18,7 +18,7 @@ def analyze_logs(base_path):
         if state == 'brazil': continue
         results[state] = {}
 
-        for log_type in ['generic', 'greedy']:
+        for log_type in ['cycle', 'order', 'mapped', 'position', 'order_opt', 'position_opt', 'mapped_opt']:
             distances = []
             times = []
             
@@ -72,7 +72,7 @@ def save_analytics(base_path, analytics):
                 print()
 
 def main():
-    base_path = 'src/assets/outputs/SA'
+    base_path = 'src/assets/outputs/G'
     analytics = analyze_logs(base_path)
     save_analytics(base_path, analytics)
 
