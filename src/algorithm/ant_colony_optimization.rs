@@ -26,8 +26,15 @@ pub struct AntColonyOptimization {
 
 impl AntColonyOptimization {
     pub fn new(cities: &Vec<City>) -> Self {
-        let min_ants = 20;
-        let max_ants = 100;
+        let min_ants = 50;
+        let max_ants;
+        if cities.len() >= 400 {
+            max_ants = 50;
+        } else if cities.len() >= 200 {
+            max_ants = 50;
+        } else {
+            max_ants = 50;
+        }
         let ants = cmp::max(min_ants, cmp::min(cities.len(), max_ants));
         print!(
             "AntColonyOptimization::new() called with {} cities, using {} ants",
@@ -42,7 +49,7 @@ impl AntColonyOptimization {
             rho0: 0.3,
             gamma: 0.8,
             omega: 0.7,
-            stall_limit: 250,
+            stall_limit: 200,
             s_threshold: 30,
             s: 0,
             rng: rng(),
@@ -132,7 +139,7 @@ impl AntColonyOptimization {
         let mut probabilities = Vec::new();
         let mut sum = 0.0;
 
-        // use candidate lists
+        // // use candidate lists
         let candidates = &self.candidate_lists[current];
         let mut candidates: Vec<usize> = candidates
             .iter()
@@ -153,7 +160,7 @@ impl AntColonyOptimization {
             sum += probability;
         }
 
-        // // use all cities
+        // use all cities
         // for i in 0..n {
         //     if !visited.contains(&(i as u16)) {
         //         let tau = pheromone_matrix[current * n + i].powf(self.alpha);
@@ -340,8 +347,8 @@ impl AntColonyOptimization {
                 }
             }
 
-            self.update_alpha_beta(iteration, self.stall_limit); // AACO-LST
-            // self.update_beta_by_entropy(&pheromone_matrix);
+            // self.update_alpha_beta(iteration, self.stall_limit); // AACO-LST
+            self.update_beta_by_entropy(&pheromone_matrix);
 
             if improved {
                 iterations_without_improvement = 0;
@@ -352,26 +359,26 @@ impl AntColonyOptimization {
             }
 
             if iterations_without_improvement >= self.stall_limit {
-                println!(
-                    "Converged after {} iterations without improvement (best cost: {:.4})",
-                    iterations_without_improvement, self.best_cost
-                );
+                // println!(
+                //     "Converged after {} iterations without improvement (best cost: {:.4})",
+                //     iterations_without_improvement, self.best_cost
+                // );
                 break;
             }
 
             self.update_rho(iteration);
             self.update_pheromone(&mut pheromone_matrix, &distance_matrix, &mut paths, 10.0);
 
-            // if iteration % 5 == 0 {
-            println!("Iteration {}: Best Cost = {:.4}", iteration, self.best_cost);
-            // }
+            if iteration % 5 == 0 {
+                println!("Iteration {}: Best Cost = {:.4}", iteration, self.best_cost);
+            }
             iteration += 1;
         }
 
-        println!(
-            "Final best path: {:?} | cost = {:.4}",
-            self.best_path, self.best_cost
-        );
+        // println!(
+        //     "Final best path: {:?} | cost = {:.4}",
+        //     self.best_path, self.best_cost
+        // );
 
         (self.best_path.clone(), self.best_cost)
     }
