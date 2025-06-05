@@ -1,0 +1,7 @@
+Path: [13, 9, 5, 15, 7, 12, 6, 10, 3, 4, 2, 14, 11, 0, 1, 8, 13]
+Distance: 11.707408088402556
+Total Time: 0.687353141
+Population Size: 100
+Generations: 202704
+Crossover: partially_mapped_crossover
+Mutations: {"inversion_mutation", ""}

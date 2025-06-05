@@ -1,0 +1,6 @@
+Thu Jun  5 13:43:50 -03 2025
+Running test 9 for UF: al with algorithm: G
+Execute Genetic
+13.368233755025399
+4.690874152
+Thu Jun  5 13:43:54 -03 2025

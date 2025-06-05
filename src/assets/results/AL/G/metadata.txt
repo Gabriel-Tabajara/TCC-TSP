@@ -1,0 +1,7 @@
+Path: [92, 4, 69, 90, 30, 41, 100, 10, 58, 55, 82, 94, 84, 22, 46, 51, 74, 3, 17, 12, 101, 75, 52, 1, 9, 91, 83, 5, 40, 23, 29, 73, 72, 34, 80, 87, 62, 15, 31, 99, 8, 67, 65, 57, 36, 6, 39, 47, 63, 60, 89, 18, 95, 76, 61, 25, 68, 0, 35, 53, 16, 64, 50, 77, 85, 26, 11, 56, 27, 66, 33, 24, 2, 44, 28, 93, 43, 98, 14, 45, 20, 97, 7, 96, 48, 71, 81, 19, 86, 88, 32, 21, 59, 42, 13, 37, 49, 38, 79, 78, 54, 70, 92]
+Distance: 13.285881532843593
+Total Time: 3.51912836
+Population Size: 100
+Generations: 265218
+Crossover: partially_mapped_crossover
+Mutations: {"", "greedy_sub_tour_mutation", "inversion_mutation", "greedy_insertion_mutation", "insertion_mutation", "displacement_mutation", "simple_inversion_mutation"}

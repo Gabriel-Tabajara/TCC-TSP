@@ -1,0 +1,6 @@
+Thu Jun  5 13:45:48 -03 2025
+Running test 7 for UF: pe with algorithm: G
+Execute Genetic
+42.41319975347011
+17.969827848
+Thu Jun  5 13:46:06 -03 2025
