@@ -1,3 +1,10 @@
+Log Type: possition_opt_greedy
+Mean Time: 844.42
+Mean Distance: 164.98310948663044
+Best Result: 163.22364188087488
+Worst Result: 165.70498995706907
+Time of Best Distance: 1040.70
+
 Log Type: cycle
 Mean Time: 459.89
 Mean Distance: 167.3104920604955
