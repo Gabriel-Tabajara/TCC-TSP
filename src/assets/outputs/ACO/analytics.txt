@@ -1,0 +1,128 @@
+State: sp
+  Log Type: aaco100
+    Mean Time: 911.85
+    Mean Distance: 97.73879458678314
+    Best Result: 96.61861004490358
+    Worst Result: 100.82018142763978
+    Time of Best Distance: 628.56
+
+State: sp
+  Log Type: aaco25
+    Mean Time: 256.73
+    Mean Distance: 97.13051092730329
+    Best Result: 96.82099475426418
+    Worst Result: 97.39489661091548
+    Time of Best Distance: 280.39
+
+State: sp
+  Log Type: entropy
+    Mean Time: 758.40
+    Mean Distance: 124.17922596963527
+    Best Result: 121.91374196434558
+    Worst Result: 125.47675918464529
+    Time of Best Distance: 904.41
+
+State: mg
+  Log Type: aaco100
+    Mean Time: 1721.90
+    Mean Distance: 161.0211954686019
+    Best Result: 160.15169445829022
+    Worst Result: 161.734898910315
+    Time of Best Distance: 1571.13
+
+State: mg
+  Log Type: aaco25
+    Mean Time: 575.85
+    Mean Distance: 161.11610027393846
+    Best Result: 159.88410523044683
+    Worst Result: 161.95448937985265
+    Time of Best Distance: 465.64
+
+State: mg
+  Log Type: entropy
+    Mean Time: 1311.63
+    Mean Distance: 208.16875536980132
+    Best Result: 204.92163201093578
+    Worst Result: 210.9251224256866
+    Time of Best Distance: 2169.01
+
+State: pr
+  Log Type: aaco100
+    Mean Time: 260.41
+    Mean Distance: 67.63693621497752
+    Best Result: 67.30840184970067
+    Worst Result: 68.32255071192935
+    Time of Best Distance: 215.66
+
+State: pr
+  Log Type: aaco50
+    Mean Time: 137.43
+    Mean Distance: 67.85970604830975
+    Best Result: 67.45307254319842
+    Worst Result: 68.7657116930072
+    Time of Best Distance: 152.86
+
+State: pr
+  Log Type: entropy
+    Mean Time: 252.44
+    Mean Distance: 81.17123615763813
+    Best Result: 80.58616326394367
+    Worst Result: 82.5140804001458
+    Time of Best Distance: 138.57
+
+State: sc
+  Log Type: aaco100
+    Mean Time: 127.54
+    Mean Distance: 40.899771950327974
+    Best Result: 40.67336855675605
+    Worst Result: 41.26338460364413
+    Time of Best Distance: 109.45
+
+State: sc
+  Log Type: aaco50
+    Mean Time: 56.36
+    Mean Distance: 40.95685607552051
+    Best Result: 40.69408925792174
+    Worst Result: 41.480277168254645
+    Time of Best Distance: 50.90
+
+State: sc
+  Log Type: entropy
+    Mean Time: 108.22
+    Mean Distance: 48.54143693922868
+    Best Result: 47.03558065415855
+    Worst Result: 49.157166743467286
+    Time of Best Distance: 95.26
+
+State: am
+  Log Type: aaco100
+    Mean Time: 3.06
+    Mean Distance: 63.518011059627085
+    Best Result: 63.24392064599955
+    Worst Result: 64.00512377635509
+    Time of Best Distance: 3.04
+
+State: am
+  Log Type: aaco50
+    Mean Time: 2.52
+    Mean Distance: 63.62203458054485
+    Best Result: 63.14088611964191
+    Worst Result: 64.13205219135541
+    Time of Best Distance: 2.50
+
+State: am
+  Log Type: aaco10
+    Mean Time: 5.99
+    Mean Distance: 63.88809217299347
+    Best Result: 63.88809217299347
+    Worst Result: 63.88809217299347
+    Time of Best Distance: 5.99
+
+State: am
+  Log Type: entropy
+    Mean Time: 3.12
+    Mean Distance: 63.86745321354658
+    Best Result: 63.24392064599957
+    Worst Result: 64.13205219135541
+    Time of Best Distance: 3.04
+
