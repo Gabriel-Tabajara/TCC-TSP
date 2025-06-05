@@ -1,0 +1,6 @@
+Wed Jun  4 08:26:55 -03 2025
+Running test 7 for UF: am with algorithm: ACO
+AntColonyOptimization::new() called with 62 cities, using 62 antsExecute AntColonyOptimization
+63.3690546764717
+3.001589294
+Wed Jun  4 08:26:58 -03 2025
