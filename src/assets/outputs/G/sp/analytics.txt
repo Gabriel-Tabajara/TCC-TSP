@@ -1,4 +1,4 @@
-Log Type: possition_opt_greedy
+Log Type: mapped_opt_greedy
 Mean Time: 401.77
 Mean Distance: 99.35681017701692
 Best Result: 98.56154966769228
