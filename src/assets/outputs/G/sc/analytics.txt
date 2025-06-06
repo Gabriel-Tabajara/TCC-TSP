@@ -54,3 +54,10 @@ Best Result: 41.937796008885634
 Worst Result: 43.21240994230936
 Time of Best Distance: 63.93
 
+Log Type: mapped_opt_greedy
+Mean Time: 48.95
+Mean Distance: 41.834924365574366
+Best Result: 41.284421431812525
+Worst Result: 43.10069746950814
+Time of Best Distance: 31.77
+
