@@ -1,0 +1,6 @@
+Thu Jun  5 20:14:56 -03 2025
+Running test 1 for UF: brazil with algorithm: G
+Execute Genetic
+1257.4230323262364
+10666.446833066
+Thu Jun  5 23:12:46 -03 2025
