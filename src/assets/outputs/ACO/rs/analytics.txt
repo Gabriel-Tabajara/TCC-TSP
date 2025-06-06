@@ -1,0 +1,7 @@
+Log Type: aaco50
+Mean Time: 205.03
+Mean Distance: 84.92949664501188
+Best Result: 84.3854867067606
+Worst Result: 85.47665031854316
+Time of Best Distance: 241.24
+

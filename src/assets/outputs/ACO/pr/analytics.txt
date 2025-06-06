@@ -1,21 +1,7 @@
-Log Type: aaco100
-Mean Time: 260.41
-Mean Distance: 67.63693621497752
-Best Result: 67.30840184970067
-Worst Result: 68.32255071192935
-Time of Best Distance: 215.66
-
 Log Type: aaco50
 Mean Time: 137.43
 Mean Distance: 67.85970604830975
 Best Result: 67.45307254319842
 Worst Result: 68.7657116930072
 Time of Best Distance: 152.86
-
-Log Type: entropy
-Mean Time: 252.44
-Mean Distance: 81.17123615763813
-Best Result: 80.58616326394367
-Worst Result: 82.5140804001458
-Time of Best Distance: 138.57
 
