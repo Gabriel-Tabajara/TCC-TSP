@@ -1,18 +1,6 @@
 Fri Jun  6 10:28:56 -03 2025
 Running test 1 for UF: brazil with algorithm: ACO
 AntColonyOptimization::new() called with 5570 cities, using 100 antsExecute AntColonyOptimization
-Iteration 0: Best Cost = 15793.6128
-Iteration 1: Best Cost = 2952.8011
-Iteration 2: Best Cost = 2343.4781
-Iteration 3: Best Cost = 2122.8227
-Iteration 4: Best Cost = 2008.4678
-Iteration 5: Best Cost = 1922.3710
-Iteration 6: Best Cost = 1848.0955
-Iteration 7: Best Cost = 1824.7592
-Iteration 8: Best Cost = 1775.2344
-Iteration 9: Best Cost = 1775.2344
-Iteration 10: Best Cost = 1762.0740
-Iteration 11: Best Cost = 1697.5216
-Iteration 12: Best Cost = 1697.5216
-Iteration 13: Best Cost = 1668.0018
-Iteration 14: Best Cost = 1668.0018
+1353.6133934087952
+76513.583238711
+Sat Jun  7 07:44:20 -03 2025
