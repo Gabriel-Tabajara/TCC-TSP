@@ -1,0 +1,6 @@
+Tue Jun  3 16:09:42 -03 2025
+Running test 8 for UF: sp with algorithm: G
+Execute Genetic
+101.36610425302575
+615.415945253
+Tue Jun  3 16:19:58 -03 2025

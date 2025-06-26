@@ -1,0 +1,5 @@
+Fri May 30 13:28:54 -03 2025
+Running test 1 for UF: brazil with algorithm: SA
+Execute SimulatedAnnealing
+1191.4501288839022
+28097.824772976

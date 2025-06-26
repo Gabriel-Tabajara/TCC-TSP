@@ -1,0 +1,6 @@
+Thu Jun  5 23:31:38 -03 2025
+Running test 1 for UF: brazil with algorithm: ACO
+AntColonyOptimization::new() called with 5570 cities, using 25 antsExecute AntColonyOptimization
+1460.203220379299
+38563.41785513
+Fri Jun  6 10:14:33 -03 2025

@@ -1,0 +1,6 @@
+Thu Jun  5 14:06:47 -03 2025
+Running test 7 for UF: rs with algorithm: G
+Execute Genetic
+86.07960337472913
+213.471285588
+Thu Jun  5 14:10:21 -03 2025

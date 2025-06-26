@@ -1,0 +1,6 @@
+Sun Jun  1 00:57:33 -03 2025
+Running test 7 for UF: am with algorithm: G
+Execute Genetic
+63.3963460086022
+2.384700972
+Sun Jun  1 00:57:35 -03 2025

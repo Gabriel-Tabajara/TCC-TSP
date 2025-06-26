@@ -1,0 +1,7 @@
+Log Type: mapped_opt_greedy
+Mean Time: 4.44
+Mean Distance: 13.444903862485983
+Best Result: 13.285881532843593
+Worst Result: 13.758704360319904
+Time of Best Distance: 3.52
+

@@ -1,0 +1,63 @@
+Log Type: mapped_opt_greedy
+Mean Time: 401.77
+Mean Distance: 99.35681017701692
+Best Result: 98.56154966769228
+Worst Result: 100.10301773129856
+Time of Best Distance: 366.81
+
+Log Type: cycle
+Mean Time: 253.74
+Mean Distance: 101.37780276425349
+Best Result: 100.2874142384111
+Worst Result: 102.67496386000687
+Time of Best Distance: 267.34
+
+Log Type: order
+Mean Time: 2092.46
+Mean Distance: 101.4256260996344
+Best Result: 100.79864349651463
+Worst Result: 102.09173752695773
+Time of Best Distance: 1690.72
+
+Log Type: mapped
+Mean Time: 4818.73
+Mean Distance: 101.0930157238303
+Best Result: 100.03218366947277
+Worst Result: 102.46225989638143
+Time of Best Distance: 6071.80
+
+Log Type: position
+Mean Time: 5348.44
+Mean Distance: 100.76108938529423
+Best Result: 99.85976507163583
+Worst Result: 101.82429249429723
+Time of Best Distance: 6163.85
+
+Log Type: order_opt
+Mean Time: 557.68
+Mean Distance: 101.4714581298326
+Best Result: 100.86312011536879
+Worst Result: 103.22849583731725
+Time of Best Distance: 615.64
+
+Log Type: position_opt
+Mean Time: 1290.24
+Mean Distance: 101.79567953454418
+Best Result: 100.24808224287332
+Worst Result: 103.28111923763745
+Time of Best Distance: 1311.20
+
+Log Type: mapped_opt
+Mean Time: 661.82
+Mean Distance: 101.22241526217661
+Best Result: 100.26456373847348
+Worst Result: 102.34188825646413
+Time of Best Distance: 742.53
+
+Log Type: mapped_opt_greedy
+Mean Time: 401.77
+Mean Distance: 99.35681017701692
+Best Result: 98.56154966769228
+Worst Result: 100.10301773129856
+Time of Best Distance: 366.81
+

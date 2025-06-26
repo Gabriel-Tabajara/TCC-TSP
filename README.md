@@ -14,7 +14,7 @@
 
 - default plot is `false`, when `true` it will plot the graph
 - default algorithm is `G` (Genetic Algorithm)
-  - options are `G` (Genetic Algorithm), `BB` (Branch and Bound), `SA` (Simulated Annealing) and `ADO` (Ant Colony Optimization)
+  - options are `G` (Genetic Algorithm), `BB` (Branch and Bound), `SA` (Simulated Annealing) and `ACO` (Ant Colony Optimization)
 - default uf is `BRAZIL`
 
 

@@ -188,4 +188,13 @@ pub trait Algorithm {
     fn matrix_index(size: usize, row: usize, column: usize) -> usize {
         row * size + column
     }
+
+    fn print_distance_matrix(distance_matrix: &[f64], size: usize) {
+        for i in 0..size {
+            for j in 0..size {
+                print!("{:.2} ", distance_matrix[Self::matrix_index(size, i, j)]);
+            }
+            println!();
+        }
+    }
 }

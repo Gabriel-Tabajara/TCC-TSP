@@ -1,0 +1,6 @@
+Sat May 31 17:10:28 -03 2025
+Running test 10 for UF: pr with algorithm: G
+Execute Genetic
+70.30157461773167
+495.291239668
+Sat May 31 17:18:43 -03 2025

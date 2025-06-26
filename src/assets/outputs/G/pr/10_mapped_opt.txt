@@ -1,0 +1,6 @@
+Wed Jun  4 01:00:51 -03 2025
+Running test 10 for UF: pr with algorithm: G
+Execute Genetic
+70.74792757474839
+123.229467858
+Wed Jun  4 01:02:55 -03 2025

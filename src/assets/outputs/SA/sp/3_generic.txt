@@ -1,0 +1,6 @@
+Thu May 29 13:24:54 -03 2025
+Running test 3 for UF: sp with algorithm: SA
+Execute SimulatedAnnealing
+95.51208690878389
+682.848195689
+Thu May 29 13:36:18 -03 2025

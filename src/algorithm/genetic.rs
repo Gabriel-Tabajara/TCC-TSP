@@ -379,11 +379,15 @@ impl Genetic {
         let end = self.rng.random_range(start + 1..n - 1);
 
         let mut path = parent_1.get_path().clone();
-        path.drain(start..end);
+        let removed_cities = path[start..end].to_vec();
+
         for &city in parent_2.get_path() {
-            if !path.contains(&city) {
-                path.insert(start, city);
+            if removed_cities.contains(&city) {
+                path[start] = city;
                 start += 1;
+                if start >= end {
+                    break;
+                }
             }
         }
 
@@ -436,17 +440,17 @@ impl Genetic {
         let n = parent_2_path.len();
         let mut path = parent_1.get_path().clone();
 
-        let mut swap_size = self.rng.random_range(1..path.len() / 2);
-        let mut swaped_positions: HashSet<usize> = HashSet::new();
+        let mut swap_size = self.rng.random_range(1..path.len() / 5);
+        let mut swaped_positions = vec![false; n];
 
         while swap_size > 0 {
             let i = self.rng.random_range(0..n - 1);
-            let to_swap = path[i];
-            if !swaped_positions.contains(&i) {
+            if !swaped_positions[i] {
+                let to_swap = path[i];
                 let j = path.iter().position(|&x| x == parent_2_path[i]).unwrap();
                 path[i] = parent_2_path[i];
                 path[j] = to_swap;
-                swaped_positions.insert(i);
+                swaped_positions[i] = true;
                 swap_size -= 1;
             }
         }
@@ -633,33 +637,31 @@ impl Genetic {
         let start = self.rng.random_range(0..n - 2);
         let end = self.rng.random_range(start + 1..n - 1);
 
-        let mut path = vec![u16::MAX; n];
-        let initial = &parent_1.get_path()[start..end].to_vec();
-        let replace = &parent_2.get_path()[start..end].to_vec();
+        let mut path = parent_1.get_path().clone();
+        let initial = parent_1.get_path()[start..end].to_vec();
+        let replace = parent_2.get_path()[start..end].to_vec();
 
-        path[start..end].copy_from_slice(initial);
+        path[start..end].copy_from_slice(&replace);
+
+        let duplicated: Vec<_> = replace
+            .iter()
+            .filter(|x| !initial.contains(x))
+            .cloned()
+            .collect();
+
+        let mut to_replace: Vec<_> = initial
+            .iter()
+            .filter(|x| !replace.contains(x))
+            .rev()
+            .cloned()
+            .collect();
 
         let mut i = 0;
-        for &city in parent_2.get_path() {
-            if !(start..end).contains(&i) {
-                if !path.contains(&city) && !replace.contains(&city) {
-                    path[i] = city;
-                    i += 1;
-                } else if initial.contains(&city) && !replace.contains(&city) {
-                    let mut replaced = false;
-                    let mut initial_pos = initial.iter().position(|&x| x == city).unwrap();
-                    while !replaced {
-                        if !path.contains(&replace[(initial_pos) % replace.len()]) {
-                            path[i] = replace[(initial_pos) % replace.len()];
-                            replaced = true;
-                        }
-                        initial_pos += 1;
-                    }
-                    i += 1;
-                }
-            } else {
-                i += end - start;
+        for city in path.clone() {
+            if duplicated.contains(&city) && !(start..end).contains(&i) {
+                path[i] = to_replace.pop().unwrap();
             }
+            i += 1;
         }
 
         let distance = Self::calculate_path_distance(&path, &self.distance_matrix);
@@ -748,7 +750,7 @@ impl Genetic {
         while gen_not_changed_best < gen_not_changed_best_breakpoint {
             let (parent_1, parent_2) = self.select_parents(&population);
             let children = self
-                .cycle_crossover(&parent_1, &parent_2)
+                .partially_mapped_crossover(&parent_1, &parent_2)
                 .mutate(&self.distance_matrix, swap);
 
             if children.get_distance() < worst.get_distance() {
