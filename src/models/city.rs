@@ -17,6 +17,10 @@ impl City {
         }
     }
 
+    pub fn get_id(&self) -> u16 {
+        self.id
+    }
+
     pub fn get_coordinates(&self) -> &Coordinates {
         &self.coordinates
     }

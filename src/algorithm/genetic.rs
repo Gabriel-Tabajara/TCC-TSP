@@ -6,6 +6,7 @@ use std::{
 
 use super::algorithm::{Algorithm, ExecuteResponse};
 use crate::models::city::City;
+use kiddo::KdTree;
 use plotters::prelude::LogScalable;
 use rand::{
     Rng,
@@ -238,6 +239,7 @@ impl Chromossome {
 
 pub struct Genetic {
     distance_matrix: Vec<f64>,
+    kd_tree: KdTree<f32, 2>,
     cities: Vec<City>,
     crossover: String,
     mutations: HashSet<String>,
@@ -250,6 +252,7 @@ impl Genetic {
         Genetic {
             distance_matrix: vec![],
             cities: cities.clone(),
+            kd_tree: Genetic::create_kd_tree(cities.clone()),
             crossover: String::new(),
             mutations: HashSet::new(),
             generations: 0,
@@ -281,19 +284,20 @@ impl Genetic {
             let mut current_city = self.rng.random_range(0..cities_len - 1);
 
             let mut path = vec![current_city];
+            let mut visited_cities = vec![&self.cities[current_city]];
             while path.len() < cities_len {
-                let near_neighbours = Genetic::find_n_best_neighbours_with_filter(
-                    &self.distance_matrix,
-                    current_city as usize,
-                    cities_len,
+                let near_neighbours = Genetic::find_best_n_neighbours_kd_tree(
+                    &self.kd_tree,
+                    &self.cities[current_city],
                     greedy_n,
-                    &path,
+                    &visited_cities,
                 );
 
                 let chosen = near_neighbours.choose(&mut self.rng).unwrap();
 
                 current_city = chosen.clone();
                 path.push(current_city);
+                visited_cities.push(&self.cities[current_city]);
             }
 
             let path_u16 = path.iter().map(|&x| x as u16).collect::<Vec<u16>>().clone();
@@ -302,6 +306,7 @@ impl Genetic {
                 path_u16.clone(),
                 Self::calculate_path_distance(&path_u16, &self.distance_matrix),
             ));
+            println!("Chromossome {} created", population.len());
         }
 
         population
@@ -758,13 +763,13 @@ impl Genetic {
                     best = children;
                     let mutation = best.get_mutation();
                     self.mutations.insert(mutation.clone());
-                    // println!(
-                    //     "{} {} {} {}",
-                    //     &best.get_distance(),
-                    //     self.generations,
-                    //     swap,
-                    //     mutation
-                    // );
+                    println!(
+                        "{} {} {} {}",
+                        &best.get_distance(),
+                        self.generations,
+                        swap,
+                        mutation
+                    );
                     if swap > 1 {
                         swap -= 1;
                     }
@@ -841,7 +846,7 @@ impl Algorithm for Genetic {
         println!("Execute Genetic");
         let start_time = Instant::now();
         let len_cities = self.cities.len();
-        let greedy_range = ((len_cities as f32).sqrt() as usize).max(5);
+        let greedy_range = ((len_cities as f32).sqrt() as usize).max(10);
         let population_size;
         if len_cities > 1000 {
             population_size = 1;
