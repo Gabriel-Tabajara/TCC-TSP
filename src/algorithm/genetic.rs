@@ -338,7 +338,6 @@ impl Genetic {
         (population[parent_1].clone(), population[parent_2].clone())
     }
 
-    // Muito demorado e ruim
     fn order_crossover(&mut self, parent_1: &Chromossome, parent_2: &Chromossome) -> Chromossome {
         self.crossover = "order_crossover".to_string();
 
@@ -365,7 +364,6 @@ impl Genetic {
         Chromossome::new(path, distance)
     }
 
-    // Rápido e bom
     fn order_based_crossover(
         &mut self,
         parent_1: &Chromossome,
@@ -395,7 +393,6 @@ impl Genetic {
         Chromossome::new(path, distance)
     }
 
-    // Rápido e bom
     fn cycle_crossover(&mut self, parent_1: &Chromossome, parent_2: &Chromossome) -> Chromossome {
         self.crossover = "cycle_crossover".to_string();
         let parent_1_path = parent_1.get_path();
@@ -428,7 +425,6 @@ impl Genetic {
         Chromossome::new(path, distance)
     }
 
-    // Demorado e bom
     fn position_based_crossover(
         &mut self,
         parent_1: &Chromossome,
@@ -459,7 +455,6 @@ impl Genetic {
         Chromossome::new(path, distance)
     }
 
-    // Meio ruim e muito lento
     fn heuristic_crossover(
         &mut self,
         parent_1: &Chromossome,
@@ -527,7 +522,6 @@ impl Genetic {
         Chromossome::new(path, distance)
     }
 
-    // Ruim e muito lento
     fn genetic_edge_recombination_crossover(
         &mut self,
         parent_1: &Chromossome,
@@ -594,7 +588,6 @@ impl Genetic {
         Chromossome::new(path, distance)
     }
 
-    // Ruim e rápido
     fn maximal_preservative_crossover(
         &mut self,
         parent_1: &Chromossome,
@@ -624,7 +617,6 @@ impl Genetic {
         Chromossome::new(path, distance)
     }
 
-    // Demora um pouco porém bom
     fn partially_mapped_crossover(
         &mut self,
         parent_1: &Chromossome,
@@ -668,7 +660,6 @@ impl Genetic {
         Chromossome::new(path, distance)
     }
 
-    // Rápido porém ruim
     fn alternating_position_crossover(
         &mut self,
         parent_1: &Chromossome,
@@ -695,7 +686,6 @@ impl Genetic {
         Chromossome::new(path, distance)
     }
 
-    // Horrorrosso
     fn cycle_crossover_v2(
         &mut self,
         parent_1: &Chromossome,
