@@ -1,10 +1,6 @@
 #!/bin/bash
 
-<<<<<<< HEAD
 TIMES=2
-=======
-TIMES=1
->>>>>>> ant-colony-optimization
 UFs=(
     # "rr"
     # "ap"
@@ -26,29 +22,17 @@ UFs=(
     # "ma"
     # "pi"
     # "go"
-<<<<<<< HEAD
     # "sc"
-=======
-    "sc"
->>>>>>> ant-colony-optimization
     # "pr"
     # "ba"
     # "rs"
     # "sp"
     # "mg"
-<<<<<<< HEAD
     "brazil"
 )
 
 ALG="SA"
 VARIANT="generic" # ou greedy
-=======
-    # "brazil"
-)
-
-ALG="ACO"
-VARIANT="candidate_list3" # ou greedy
->>>>>>> ant-colony-optimization
 
 for uf in "${UFs[@]}"
 do
