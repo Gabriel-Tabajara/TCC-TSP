@@ -755,13 +755,13 @@ impl Genetic {
                     best = children;
                     let mutation = best.get_mutation();
                     self.mutations.insert(mutation.clone());
-                    println!(
-                        "{} {} {} {}",
-                        &best.get_distance(),
-                        self.generations,
-                        swap,
-                        mutation
-                    );
+                    // println!(
+                    //     "{} {} {} {}",
+                    //     &best.get_distance(),
+                    //     self.generations,
+                    //     swap,
+                    //     mutation
+                    // );
                     if swap > 1 {
                         swap -= 1;
                     }
@@ -808,10 +808,10 @@ impl Genetic {
                 current_gen = new_gen.clone();
                 let mutation = new_gen.get_mutation();
                 self.mutations.insert(mutation.clone());
-                println!(
-                    "{} {} {} {}",
-                    &new_distance, self.generations, swap, mutation
-                );
+                // println!(
+                //     "{} {} {} {}",
+                //     &new_distance, self.generations, swap, mutation
+                // );
                 if swap > 1 {
                     swap -= 1;
                 }
