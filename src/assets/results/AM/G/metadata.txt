@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 Path: [25, 15, 34, 46, 12, 29, 21, 22, 24, 26, 5, 9, 55, 52, 1, 50, 58, 16, 32, 57, 0, 59, 39, 23, 33, 31, 51, 49, 7, 19, 20, 3, 10, 2, 14, 43, 35, 36, 17, 27, 37, 18, 48, 47, 54, 30, 53, 60, 41, 45, 8, 11, 40, 61, 28, 6, 42, 13, 44, 4, 38, 56, 25]
 Distance: 63.14088611964191
 Total Time: 2.164108042
@@ -6,13 +5,3 @@ Population Size: 100
 Generations: 256969
 Crossover: partially_mapped_crossover
 Mutations: {"swap_mutation", "displacement_mutation", "", "simple_inversion_mutation", "greedy_sub_tour_mutation", "greedy_insertion_mutation", "insertion_mutation", "inversion_mutation"}
-=======
-Path: [5, 9, 55, 52, 1, 50, 58, 16, 32, 57, 0, 59, 39, 23, 33, 31, 51, 49, 7, 19, 20, 3, 10, 2, 14, 43, 35, 36, 17, 27, 37, 18, 48, 47, 54, 30, 53, 60, 41, 45, 8, 11, 40, 61, 28, 6, 42, 13, 44, 4, 38, 56, 25, 15, 34, 46, 12, 29, 21, 22, 24, 26, 5]
-Distance: 63.14088611964191
-Total Time: 2.313645175
-Population Size: 1
-Generations: 582451
-Crossover: 
-Mutations: {"displacement_mutation", "simple_inversion_mutation", "inversion_mutation", "greedy_insertion_mutation", "insertion_mutation", "greedy_sub_tour_mutation", "swap_mutation"}
-Greedy Start Range: 10
->>>>>>> ant-colony-optimization
